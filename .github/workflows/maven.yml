@@ -50,7 +50,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        CHAT_ID: ${{ vars.CHAT_ID }}
-        METALLUM_BOT_TOKEN: ${{ vars.METALLUM_BOT_TOKEN }}
-        METALLUM_BOT_NAME: ${{ vars.METALLUM_BOT_NAME }}
+        CHAT_ID: ${{ secrets.CHAT_ID }}
+        METALLUM_BOT_TOKEN: ${{ secrets.METALLUM_BOT_TOKEN }}
+        METALLUM_BOT_NAME: ${{ secrets.METALLUM_BOT_NAME }}
       run: mvn -B -X package --file pom.xml
