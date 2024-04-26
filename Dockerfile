@@ -3,6 +3,6 @@ COPY src /home/app/src
 COPY pom.xml /home/app
 RUN mvn -f /home/app/pom.xml clean package -DskipTests
 
-FROM eclipse-temurin:21@sha256:9c8f5e21fa6429c8f285e9e83b1d36f6b8841d0dd0ecaee5f27878370f028898
+FROM eclipse-temurin:21@sha256:dd90127baca82663c56ff903156d229a8287fe94a7b0145a31b45fecebdb7be6
 COPY --from=build /home/app/target/metallumbot-0.0.1.jar /usr/local/lib/metallumbot.jar
 ENTRYPOINT ["java", "-jar", "/usr/local/lib/metallumbot.jar"]
