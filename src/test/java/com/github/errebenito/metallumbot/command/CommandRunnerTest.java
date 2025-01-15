@@ -30,7 +30,7 @@ class CommandRunnerTest {
     final CommandRunner runner = new CommandRunner(new UrlConnector()
         .withUrl(UrlType.RANDOM_BAND.getUrl()));
     final String result = runner.doBand();
-    assertTrue(result.contains("https://www.metal-archives.com/band/view/id/"), "Return value was not a band link: " + result);
+    assertTrue(result.contains("https://www.metal-archives.com/band/view/id/"), "Return value was not a band link. Is it empty? " + result.isEmpty());
   }
 
   @Test
@@ -38,7 +38,7 @@ class CommandRunnerTest {
     final CommandRunner runner = new CommandRunner(new UrlConnector()
         .withUrl(UrlType.UPCOMING_RELEASES.getUrl()));
     final String result = runner.doUpcoming();
-    assertTrue(result.contains("https://www.metal-archives.com/albums/"), "Return value did not contain an album link: " + result);
+    assertTrue(result.contains("https://www.metal-archives.com/albums/"), "Return value did not contain an album link. Is it empty? " + result.isEmpty());
   }
   
   @Test
