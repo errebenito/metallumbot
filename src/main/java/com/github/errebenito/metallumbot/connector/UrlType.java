@@ -2,6 +2,7 @@ package com.github.errebenito.metallumbot.connector;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URI;
 
 /**
  * Enum for the different URL types that the UrlConnector can access.
@@ -20,6 +21,6 @@ public enum UrlType {
   }
   
   public URL getUrl() throws MalformedURLException {
-    return new URL(this.url);
+    return  URI.create(this.url).toURL();
   }
 }
