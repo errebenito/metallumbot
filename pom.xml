@@ -2,12 +2,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.errebenito</groupId>
 	<artifactId>metallumbot</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<name>MetallumBot</name>
 	<description>Unofficial Metal Archives Telegram Bot</description>
 	<properties>
-		<maven.compiler.source>17</maven.compiler.source>
-		<maven.compiler.target>17</maven.compiler.target>
+		<maven.compiler.source>23</maven.compiler.source>
+		<maven.compiler.target>23</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sonar.organization>errebenito</sonar.organization>
   		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -142,6 +142,7 @@
                     <version>1.17.4</version>
                     <executions>
                         <execution>
+                        	<?m2e execute onConfiguration,onIncremental?>
                             <id>pit-report</id>
                             <phase>test-compile</phase>
                             <goals>
@@ -157,6 +158,7 @@
                         </dependency>
                     </dependencies>
                     <configuration>
+						<skip>true</skip>
                         <targetClasses>
                             <param>com.github.errebenito.metallumbot*</param>
                         </targetClasses>
