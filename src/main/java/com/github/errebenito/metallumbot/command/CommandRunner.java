@@ -44,7 +44,7 @@ public class CommandRunner {
    */
   @Nullable
   public String doBand() {
-    String result = DEFAULT_BAND;
+    String result = ERROR_MESSAGE + DEFAULT_BAND;
     try {
       result = connector.connect().getHeaderField(LOCATION_HEADER);
       
@@ -60,7 +60,7 @@ public class CommandRunner {
    * @return A string representation of links to the first 10 upcoming albums.
    */
   public String doUpcoming() {
-    String result = DEFAULT_ALBUM;
+    String result = ERROR_MESSAGE + DEFAULT_ALBUM;
     try {
       final ObjectMapper objectMapper = new ObjectMapper();
       objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);  
