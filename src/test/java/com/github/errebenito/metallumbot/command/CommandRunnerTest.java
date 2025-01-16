@@ -38,7 +38,7 @@ class CommandRunnerTest {
     final CommandRunner runner = new CommandRunner(new UrlConnector()
         .withUrl(UrlType.UPCOMING_RELEASES.getUrl()));
     final String result = runner.doUpcoming();
-    assertTrue(result.contains("https://www.metal-archives.com/albums/") || result.isEmpty(), "Return value did not contain an album link: " + result);
+    assertTrue(result.contains("https://www.metal-archives.com/albums/"), "Return value did not contain an album link: " + result);
   }
   
   @Test
