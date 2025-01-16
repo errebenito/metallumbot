@@ -158,7 +158,6 @@
                         </dependency>
                     </dependencies>
                     <configuration>
-						<skip>true</skip>
                         <targetClasses>
                             <param>com.github.errebenito.metallumbot*</param>
                         </targetClasses>
