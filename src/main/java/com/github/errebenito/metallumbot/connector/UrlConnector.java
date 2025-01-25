@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
  *
  */
 public class UrlConnector {
+  private static final String USER_AGENT = 
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36";
   
   private static final int TIMEOUT = 5000;
     
@@ -60,8 +62,8 @@ public class UrlConnector {
     final HttpURLConnection connection = (HttpURLConnection) this.url.openConnection();
     connection.setReadTimeout(TIMEOUT);
     connection.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
-    connection.addRequestProperty("User-Agent", "Mozilla");
-    connection.addRequestProperty("Referer", "google.com");
+    connection.addRequestProperty("User-Agent", USER_AGENT);
+    connection.addRequestProperty("Referer", "https://www.google.com/");
     connection.setInstanceFollowRedirects(false);
     return connection;
   }
