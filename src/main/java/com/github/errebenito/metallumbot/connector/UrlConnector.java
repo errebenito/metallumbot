@@ -12,8 +12,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Manages connections to the metal-archives site.
@@ -27,9 +25,6 @@ public class UrlConnector {
     
   private URL url;
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(UrlConnector.class);
-
-    
   /**
    * Constructor.
    */
@@ -85,7 +80,7 @@ public class UrlConnector {
         new BufferedInputStream(this.url.openStream())))) {
       result = reader.lines().collect(Collectors.joining("\n"));
     } catch (IOException e) {
-       LOGGER.error(e.getMessage());
+       System.out.println("Exception: " + e.getMessage());
        throw e;
     }
     result = result.replace(": ,", ": 0,"); // fix unexpected empty values
