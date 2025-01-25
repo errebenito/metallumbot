@@ -24,7 +24,7 @@ public class UrlConnector {
   private static final int TIMEOUT = 5000;
     
   private URL url;
-    
+
   /**
    * Constructor.
    */
@@ -80,6 +80,7 @@ public class UrlConnector {
         new BufferedInputStream(this.url.openStream())))) {
       result = reader.lines().collect(Collectors.joining("\n"));
     }
+    
     result = result.replace(": ,", ": 0,"); // fix unexpected empty values
     return new ByteArrayInputStream(result.getBytes(StandardCharsets.UTF_8));
   }
