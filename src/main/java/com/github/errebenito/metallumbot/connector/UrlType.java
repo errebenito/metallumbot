@@ -1,8 +1,8 @@
 package com.github.errebenito.metallumbot.connector;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URI;
+import java.net.URL;
 
 /**
  * Enum for the different URL types that the UrlConnector can access.
