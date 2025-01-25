@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
  */
 class UrlConnectorTest { 
 
+  private static final String USER_AGENT =
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36";
   private static UrlConnector connector;
   
   @Test
@@ -47,13 +49,13 @@ class UrlConnectorTest {
   void whenConnectShouldHaveUserAgentRequestProperty() throws IOException {
     connector = new UrlConnector().withUrl(UrlType.RANDOM_BAND.getUrl());
     final String agent = connector.connect().getRequestProperty("User-Agent");
-    assertEquals("Mozilla", agent, "User agent did not match the expected value");
+    assertEquals(USER_AGENT, agent, "User agent did not match the expected value");
   }
   
   @Test
   void whenConnectShouldHaveUserRefererProperty() throws IOException {
     final String referer = connector.connect().getRequestProperty("Referer");
-    assertEquals("google.com", referer, "Referer did not match the expected value");
+    assertEquals("https://www.google.com/", referer, "Referer did not match the expected value");
   }
   
 }
