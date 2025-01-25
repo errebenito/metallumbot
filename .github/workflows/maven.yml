@@ -67,6 +67,7 @@ jobs:
         restore-keys: ${{ runner.os }}-m2    
     - name: Build with Maven
       env:
+        JAVA_TOOL_OPTIONS: -Dhttps.protocols=TLSv1.2
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         CHAT_ID: ${{ secrets.CHAT_ID }}
