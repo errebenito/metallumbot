@@ -24,6 +24,9 @@ public class UrlConnector {
   private static final int TIMEOUT = 5000;
     
   private URL url;
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(UrlConnector.class);
+
     
   /**
    * Constructor.
@@ -79,6 +82,9 @@ public class UrlConnector {
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(
         new BufferedInputStream(this.url.openStream())))) {
       result = reader.lines().collect(Collectors.joining("\n"));
+    } catch (IOException e) {
+       LOGGER.error(e.getMessage());
+       throw e;
     }
     result = result.replace(": ,", ": 0,"); // fix unexpected empty values
     return new ByteArrayInputStream(result.getBytes(StandardCharsets.UTF_8));
