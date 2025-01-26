@@ -103,6 +103,7 @@ public class MetallumBot extends TelegramLongPollingBot {
     TelegramBotsApi botsApi;
 
     try {
+      System.setProperty("https.protocols", "TLSv1.2, TLSV1.3");
       botsApi = new TelegramBotsApi(DefaultBotSession.class);
       botsApi.registerBot(new MetallumBot());
     } catch (TelegramApiException e) {
