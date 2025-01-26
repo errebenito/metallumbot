@@ -67,6 +67,7 @@ public class CommandRunner {
           UpcomingAlbums.class); 
       result = albums.toString();
     } catch (IOException e) {
+      System.out.println("Error fetching data: " + e.getMessage());
       LOGGER.error(ERROR_MESSAGE);
     }
     return result;
