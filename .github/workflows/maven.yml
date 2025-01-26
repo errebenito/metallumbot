@@ -23,7 +23,7 @@ jobs:
 
     steps:
     - name: Verify TLS Support
-    run: |
+      run: |
       openssl s_client -connect www.google.com:443 -tls1_2
       curl -v https://www.google.com
 
