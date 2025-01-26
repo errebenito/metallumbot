@@ -20,15 +20,14 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    env:
-      JAVA_TOOL_OPTIONS: -Dhttps.protocols=TLSv1.2
 
     steps:
     - name: Harden Runner
+      env:
+        JAVA_TOOL_OPTIONS: -Dhttps.protocols=TLSv1.2
       uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
       with:
         egress-policy: audit  
-        is-debug: true
 
     - name: Checkout
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
