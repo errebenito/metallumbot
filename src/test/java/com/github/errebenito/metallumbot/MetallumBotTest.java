@@ -7,6 +7,7 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -22,6 +23,11 @@ import org.telegram.telegrambots.meta.api.objects.Update;
  */
 class MetallumBotTest {
    
+  @BeforeAll
+  static void setUp() {
+    System.setProperty("https.protocols", "TLSv1.2");
+  }
+  
   @ParameterizedTest
   @ValueSource(strings = {"/start", "/band", "/upcoming"})
   void testOnUpdateReceived(final String command) {

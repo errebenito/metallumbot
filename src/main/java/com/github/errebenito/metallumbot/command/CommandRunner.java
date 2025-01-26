@@ -46,8 +46,7 @@ public class CommandRunner {
   public String doBand() {
     String result = ERROR_MESSAGE + DEFAULT_BAND;
     try {
-      result = connector.connect().getHeaderField(LOCATION_HEADER);
-      
+      result = connector.connect().getHeaderField(LOCATION_HEADER);  
     } catch (IOException e) {
       LOGGER.error(ERROR_MESSAGE);
     }
