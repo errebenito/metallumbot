@@ -22,11 +22,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Update CA certificates
-      run: sudo update-ca-certificates
-
-    - name: Install OpenSSL
-      run: sudo apt-get update && sudo apt-get install -y openssl
+    - name: Verify TLS Support
+    run: |
+      openssl s_client -connect www.google.com:443 -tls1_2
+      curl -v https://www.google.com
 
     - name: Harden Runner
       env:
