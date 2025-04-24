@@ -1,4 +1,4 @@
-FROM maven:3-eclipse-temurin-24@sha256:6bf2a11df114fe600c8a10dfe9d41d8890388ac31fa5f0bd6f6fade9a09b49d4 AS build
+FROM maven:3-eclipse-temurin-24@sha256:3ffc3d9cb2b7c14e09768641b15b1eac54fee1226c63de704263db0212030e7f AS build
 COPY src /home/app/src
 COPY pom.xml /home/app
 RUN mvn -f /home/app/pom.xml clean package -DskipTests
