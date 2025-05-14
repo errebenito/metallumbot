@@ -58,7 +58,7 @@ public class MetallumBot extends TelegramLongPollingBot {
           try {
             runner = new CommandRunner(new UrlConnector().withUrl(UrlType.RANDOM_BAND.getUrl()));
             execute(MessageUtils.generateMessage(update.getMessage().getChatId(), runner.doBand()));
-          } catch (TelegramApiException | MalformedURLException e) {
+          } catch (TelegramApiException | MalformedURLException _) {
             LOGGER.error(ERROR_MESSAGE);
           }
         }
@@ -68,14 +68,14 @@ public class MetallumBot extends TelegramLongPollingBot {
                 .withUrl(UrlType.UPCOMING_RELEASES.getUrl()));
             execute(MessageUtils.generateMessage(update.getMessage().getChatId(), 
                 runner.doUpcoming()));
-          } catch (TelegramApiException | MalformedURLException e) {
+          } catch (TelegramApiException | MalformedURLException _) {
             LOGGER.error(ERROR_MESSAGE);
           }
         }
         default -> {
           try {
             execute(MessageUtils.generateMessage(update.getMessage().getChatId(), USAGE));
-          } catch (TelegramApiException e) {
+          } catch (TelegramApiException _) {
             LOGGER.error(ERROR_MESSAGE);
           }
         }
@@ -106,7 +106,7 @@ public class MetallumBot extends TelegramLongPollingBot {
       System.setProperty("https.protocols", "TLSv1.2, TLSV1.3");
       botsApi = new TelegramBotsApi(DefaultBotSession.class);
       botsApi.registerBot(new MetallumBot());
-    } catch (TelegramApiException e) {
+    } catch (TelegramApiException _) {
       LOGGER.error("Error setting up and registering bot");
     }
   }
