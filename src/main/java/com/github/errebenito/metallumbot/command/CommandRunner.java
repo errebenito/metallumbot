@@ -47,7 +47,7 @@ public class CommandRunner {
     String result = ERROR_MESSAGE + DEFAULT_BAND;
     try {
       result = connector.connect().getHeaderField(LOCATION_HEADER);  
-    } catch (IOException e) {
+    } catch (IOException _) {
       LOGGER.error(ERROR_MESSAGE);
     }
     return result;
@@ -66,7 +66,7 @@ public class CommandRunner {
       final UpcomingAlbums albums = objectMapper.readValue(connector.readUpcomingAlbumsJson(), 
           UpcomingAlbums.class); 
       result = albums.toString();
-    } catch (IOException e) {
+    } catch (IOException _) {
       LOGGER.error(ERROR_MESSAGE);
     }
     return result;

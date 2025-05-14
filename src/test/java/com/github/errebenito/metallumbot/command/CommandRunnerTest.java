@@ -54,7 +54,7 @@ class CommandRunnerTest {
 
     try {
       expect(connector.readUpcomingAlbumsJson()).andThrow(new IOException());
-    } catch (IOException e) {
+    } catch (IOException _) {
       // Intentionally empty
     }
     
@@ -73,7 +73,7 @@ class CommandRunnerTest {
     try {
       connector.connect();
       expectLastCall().andStubThrow(new IOException());
-    } catch (IOException e) {
+    } catch (IOException _) {
       fail("Mock setup should not throw exception");
     }
     replay(connector);
