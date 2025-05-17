@@ -247,7 +247,7 @@ class MetallumBotTest {
   @Test
   void testInitializeBotHandlesTelegramApiExceptionWithLogging() {
     LogCaptor logCaptor = LogCaptor.forClass(MetallumBot.class);
-    try (MockedConstruction<TelegramBotsApi> _ = mockConstruction(TelegramBotsApi.class, (mock, context) -> {
+    try (var _ = mockConstruction(TelegramBotsApi.class, (mock, context) -> {
         doThrow(new TelegramApiException("test")).when(mock).registerBot(any());
       })) {
       MetallumBot.initializeBot();
