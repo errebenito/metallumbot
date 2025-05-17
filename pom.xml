@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.errebenito</groupId>
 	<artifactId>metallumbot</artifactId>
@@ -10,18 +12,18 @@
 		<maven.compiler.target>23</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sonar.organization>errebenito</sonar.organization>
-  		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
 	<dependencyManagement>
-  		<dependencies>
-    		<dependency>
-      			<groupId>com.fasterxml.jackson</groupId>
-      			<artifactId>jackson-bom</artifactId>
-      			<version>2.19.0</version>
-      			<scope>import</scope>
-      			<type>pom</type>
-    		</dependency>   
-  		</dependencies>
+		<dependencies>
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>2.19.0</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+		</dependencies>
 	</dependencyManagement>
 	<dependencies>
 		<dependency>
@@ -45,15 +47,15 @@
 			<version>2.24.3</version>
 		</dependency>
 		<dependency>
-    		<groupId>com.github.spotbugs</groupId>
-    		<artifactId>spotbugs-annotations</artifactId>
-    		<version>4.9.3</version>
-    		<scope>provided</scope>
+			<groupId>com.github.spotbugs</groupId>
+			<artifactId>spotbugs-annotations</artifactId>
+			<version>4.9.3</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
-    		<groupId>com.fasterxml.jackson.core</groupId>
-    		<artifactId>jackson-databind</artifactId>
-    		</dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
@@ -67,32 +69,57 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-    		<groupId>org.easymock</groupId>
-    		<artifactId>easymock</artifactId>
-    		<version>5.5.0</version>
-    		<scope>test</scope>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>5.12.2</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-    		<groupId>org.easymock</groupId>
-    		<artifactId>easymockclassextension</artifactId>
-    		<version>3.2</version>
-		    <scope>test</scope>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>5.17.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<version>5.17.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.github.hakky54</groupId>
+			<artifactId>logcaptor</artifactId>
+			<version>2.11.0</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
-    			<groupId>org.apache.maven.plugins</groupId>
-    			<artifactId>maven-surefire-plugin</artifactId>
-    			<version>3.5.3</version>
-    			<configuration>
-    			<includes>
-					<include>com.github.errebenito.metallumbot.MetallumBotTest.java</include>
-	    			<include>com.github.errebenito.metallumbot.command.CommandRunnerTest.java</include>
-    				<include>com.github.errebenito.metallumbot.connector.UrlConnectorTest.java</include>
-    				<include>com.github.errebenito.metallumbot.utils.MessageUtilsTest.java</include> 
-    			</includes>								
-    			</configuration>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>properties</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.5.3</version>
+				<configuration>
+					<argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+					<includes>
+						<include>com.github.errebenito.metallumbot.MetallumBotTest.java</include>
+						<include>com.github.errebenito.metallumbot.command.CommandRunnerTest.java</include>
+					  <include>com.github.errebenito.metallumbot.command.CommandRunnerFactoryTest.java</include>
+						<include>com.github.errebenito.metallumbot.connector.UrlConnectorTest.java</include>
+						<include>com.github.errebenito.metallumbot.utils.MessageUtilsTest.java</include>
+					</includes>
+				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -117,64 +144,65 @@
 				</configuration>
 			</plugin>
 			<plugin>
-    			<groupId>org.jacoco</groupId>
-    			<artifactId>jacoco-maven-plugin</artifactId>
-    			<version>0.8.13</version>
-    			<executions>
-  					<execution>
-      					<id>prepare-agent</id>
-            			<goals>
-             				<goal>prepare-agent</goal>
-            			</goals>
-      				</execution>
-      				<execution>
-            			<id>report</id>
-            			<phase>test</phase>
-               			<goals>
-               				<goal>report</goal>
-               			</goals>
-        			</execution>
-    			</executions>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.13</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
-                    <groupId>org.pitest</groupId>
-                    <artifactId>pitest-maven</artifactId>
-                    <version>1.19.2</version>
-                    <executions>
-                        <execution>
-                        	<?m2e execute onConfiguration,onIncremental?>
-                            <id>pit-report</id>
-                            <phase>test-compile</phase>
-                            <goals>
-                                <goal>mutationCoverage</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.pitest</groupId>
-                            <artifactId>pitest-junit5-plugin</artifactId>
-                            <version>1.2.2</version>
-                        </dependency>
-                    </dependencies>
-                    <configuration>
-                        <targetClasses>
-                            <param>com.github.errebenito.metallumbot*</param>
-                        </targetClasses>
-                        <targetTests>
-							<param>com.github.errebenito.metallumbot.MetallumBotTest*</param>
-                            <param>com.github.errebenito.metallumbot.command.CommandRunnerTest*</param>
-                            <param>com.github.errebenito.metallumbot.connector.UrlConnectorTest*</param>
-                            <param>com.github.errebenito.metallumbot.utils.MessageUtilsTest*</param>
-                        </targetTests>
-                        <outputFormats>
-                            <outputFormat>xml</outputFormat>
-                            <outputFormat>html</outputFormat>
-                        </outputFormats>
-                        <timestampedReports>false</timestampedReports>
-                        <failWhenNoMutations>false</failWhenNoMutations>
-                    </configuration>
-                </plugin>
+				<groupId>org.pitest</groupId>
+				<artifactId>pitest-maven</artifactId>
+				<version>1.19.2</version>
+				<executions>
+					<execution>
+						<?m2e execute onConfiguration,onIncremental?>
+						<id>pit-report</id>
+						<phase>test-compile</phase>
+						<goals>
+							<goal>mutationCoverage</goal>
+						</goals>
+					</execution>
+			</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.pitest</groupId>
+						<artifactId>pitest-junit5-plugin</artifactId>
+						<version>1.2.2</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<targetClasses>
+						<param>com.github.errebenito.metallumbot*</param>
+					</targetClasses>
+					<targetTests>
+						<param>com.github.errebenito.metallumbot.MetallumBotTest*</param>
+						<param>com.github.errebenito.metallumbot.command.CommandRunnerTest*</param>
+						<param>com.github.errebenito.metallumbot.command.CommandRunnerFactoryTest*</param>
+						<param>com.github.errebenito.metallumbot.connector.UrlConnectorTest*</param>
+						<param>com.github.errebenito.metallumbot.utils.MessageUtilsTest*</param>
+					</targetTests>
+					<outputFormats>
+						<outputFormat>xml</outputFormat>
+						<outputFormat>html</outputFormat>
+					</outputFormats>
+					<timestampedReports>false</timestampedReports>
+					<failWhenNoMutations>false</failWhenNoMutations>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
