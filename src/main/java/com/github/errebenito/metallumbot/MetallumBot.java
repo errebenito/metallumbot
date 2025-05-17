@@ -3,7 +3,6 @@ package com.github.errebenito.metallumbot;
 import com.github.errebenito.metallumbot.command.CommandRunner;
 import com.github.errebenito.metallumbot.command.CommandRunnerFactory;
 import com.github.errebenito.metallumbot.command.CommandRunnerFactoryImpl;
-import com.github.errebenito.metallumbot.connector.UrlConnector;
 import com.github.errebenito.metallumbot.connector.UrlType;
 import com.github.errebenito.metallumbot.utils.MessageUtils;
 import java.net.MalformedURLException;

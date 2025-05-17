@@ -16,10 +16,8 @@ import static org.mockito.Mockito.when;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import nl.altindag.log.LogCaptor;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -146,7 +144,7 @@ class MetallumBotTest {
 
 
   @Test
-  void testDoBandCallsSendMessage() throws MalformedURLException, TelegramApiException {
+  void testDoBandCallsSendMessage() throws MalformedURLException {
     Message message = new Message();
     message.setText("/band");
     Chat chat = new Chat();
@@ -178,7 +176,7 @@ class MetallumBotTest {
   }
 
   @Test
-  void testDoUpcomingCallsSendMessage() throws MalformedURLException, TelegramApiException {
+  void testDoUpcomingCallsSendMessage() throws MalformedURLException {
     Message message = new Message();
     message.setText("/upcoming");
     Chat chat = new Chat();
@@ -210,7 +208,7 @@ class MetallumBotTest {
   }
 
   @Test
-  void testDefaultCaseCallsSendMessage() throws TelegramApiException {
+  void testDefaultCaseCallsSendMessage() {
     Message message = new Message();
     message.setText("/invalid");
     Chat chat = new Chat();
@@ -247,13 +245,11 @@ class MetallumBotTest {
   }
 
   @Test
-  void testInitializeBotHandlesTelegramApiExceptionWithLogging() throws Exception {
+  void testInitializeBotHandlesTelegramApiExceptionWithLogging() {
     LogCaptor logCaptor = LogCaptor.forClass(MetallumBot.class);
-    try (MockedConstruction<TelegramBotsApi> ignored = mockConstruction(
-      TelegramBotsApi.class,
-        (mock, context) -> {
-          doThrow(new TelegramApiException("test")).when(mock).registerBot(any());
-        })) {
+    try (MockedConstruction<TelegramBotsApi> _ = mockConstruction(TelegramBotsApi.class, (mock, context) -> {
+        doThrow(new TelegramApiException("test")).when(mock).registerBot(any());
+      })) {
       MetallumBot.initializeBot();
     }
     List<String> logs = logCaptor.getErrorLogs();

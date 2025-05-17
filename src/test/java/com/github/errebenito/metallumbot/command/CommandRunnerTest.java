@@ -37,7 +37,7 @@ class CommandRunnerTest {
   
   @Test
   void whenDoBandShouldReturnBandLink() throws MalformedURLException {
-    final CommandRunner runner = new CommandRunner(new UrlConnector()
+    runner = new CommandRunner(new UrlConnector()
         .withUrl(UrlType.RANDOM_BAND.getUrl()));
     final String result = runner.doBand();
     assertTrue(result.contains("https://www.metal-archives.com/band/view/id/"), "Return value was not a band link: " + result);
@@ -45,7 +45,7 @@ class CommandRunnerTest {
 
   @Test
   void whenDoUpcomingShouldReturnAlbumLink() throws MalformedURLException {
-    final CommandRunner runner = new CommandRunner(new UrlConnector()
+    runner = new CommandRunner(new UrlConnector()
         .withUrl(UrlType.UPCOMING_RELEASES.getUrl()));
     final String result = runner.doUpcoming();
     assertTrue(result.contains("https://www.metal-archives.com/albums/"), "Return value did not contain an album link: " + result);
@@ -55,7 +55,7 @@ class CommandRunnerTest {
   void whenConnectorThrowsDoUpcomingShouldCatchException() throws IOException {
     when(connector.readUpcomingAlbumsJson()).thenThrow(new IOException());
 
-    final CommandRunner runner = new CommandRunner(connector);
+    runner = new CommandRunner(connector);
     runner.doUpcoming();
 
     verify(connector).readUpcomingAlbumsJson();
@@ -65,7 +65,7 @@ class CommandRunnerTest {
   void whenConnectorThrowsDoBandShouldCatchException() throws IOException {
     doThrow(new IOException()).when(connector).connect();
 
-    final CommandRunner runner = new CommandRunner(connector);
+    runner = new CommandRunner(connector);
     runner.doBand();
 
     verify(connector).connect();

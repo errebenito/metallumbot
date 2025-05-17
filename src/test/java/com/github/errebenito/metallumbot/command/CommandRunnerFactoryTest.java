@@ -8,7 +8,7 @@ import java.net.URL;
 
 import org.junit.jupiter.api.Test;
 
-public class CommandRunnerFactoryTest {
+class CommandRunnerFactoryTest {
   @Test
   void testCommandRunnerFactoryCreatesRunner() throws MalformedURLException {
     CommandRunnerFactory factory = new CommandRunnerFactoryImpl();
