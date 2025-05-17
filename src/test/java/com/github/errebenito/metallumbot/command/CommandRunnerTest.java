@@ -1,19 +1,16 @@
 package com.github.errebenito.metallumbot.command;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import org.easymock.EasyMockExtension;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import com.github.errebenito.metallumbot.connector.UrlConnector;
 import com.github.errebenito.metallumbot.connector.UrlType;
 
@@ -24,8 +21,14 @@ import com.github.errebenito.metallumbot.connector.UrlType;
  * @author rbenito
  *
  */
-@ExtendWith(EasyMockExtension.class)
+@ExtendWith(MockitoExtension.class)
 class CommandRunnerTest {
+  @Mock
+  UrlConnector connector;
+
+  @InjectMocks
+  CommandRunner runner;
+
   
   @BeforeAll
   static void setUp() {
@@ -34,7 +37,7 @@ class CommandRunnerTest {
   
   @Test
   void whenDoBandShouldReturnBandLink() throws MalformedURLException {
-    final CommandRunner runner = new CommandRunner(new UrlConnector()
+    runner = new CommandRunner(new UrlConnector()
         .withUrl(UrlType.RANDOM_BAND.getUrl()));
     final String result = runner.doBand();
     assertTrue(result.contains("https://www.metal-archives.com/band/view/id/"), "Return value was not a band link: " + result);
@@ -42,45 +45,29 @@ class CommandRunnerTest {
 
   @Test
   void whenDoUpcomingShouldReturnAlbumLink() throws MalformedURLException {
-    final CommandRunner runner = new CommandRunner(new UrlConnector()
+    runner = new CommandRunner(new UrlConnector()
         .withUrl(UrlType.UPCOMING_RELEASES.getUrl()));
     final String result = runner.doUpcoming();
     assertTrue(result.contains("https://www.metal-archives.com/albums/"), "Return value did not contain an album link: " + result);
   }  
   
   @Test
-  void whenConnectorThrowsDoUpcomingShouldCatchException() {
-    final UrlConnector connector = createMock(UrlConnector.class);
+  void whenConnectorThrowsDoUpcomingShouldCatchException() throws IOException {
+    when(connector.readUpcomingAlbumsJson()).thenThrow(new IOException());
 
-    try {
-      expect(connector.readUpcomingAlbumsJson()).andThrow(new IOException());
-    } catch (IOException _) {
-      // Intentionally empty
-    }
-    
-    replay(connector);
-    
-    final CommandRunner runner = new CommandRunner(connector);
+    runner = new CommandRunner(connector);
     runner.doUpcoming();
-    
-    verify(connector);
+
+    verify(connector).readUpcomingAlbumsJson();
   }
   
   @Test
-  void whenConnectorThrowsDoBandShouldCatchException() {
-    final UrlConnector connector = createMock(UrlConnector.class);
-    
-    try {
-      connector.connect();
-      expectLastCall().andStubThrow(new IOException());
-    } catch (IOException _) {
-      fail("Mock setup should not throw exception");
-    }
-    replay(connector);
-    
-    final CommandRunner runner = new CommandRunner(connector);
+  void whenConnectorThrowsDoBandShouldCatchException() throws IOException {
+    doThrow(new IOException()).when(connector).connect();
+
+    runner = new CommandRunner(connector);
     runner.doBand();
-    
-    verify(connector);
+
+    verify(connector).connect();
   }
 }
