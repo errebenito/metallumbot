@@ -113,6 +113,24 @@ public class MetallumBot extends TelegramLongPollingBot {
   static void initializeBot() {
     TelegramBotsApi botsApi;
 
+    new Thread(() -> {
+            try {
+                int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
+                com.sun.net.httpserver.HttpServer server = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress(port), 0);
+                server.createContext("/", exchange -> {
+                    String response = "Bot is running.";
+                    exchange.sendResponseHeaders(200, response.length());
+                    try (OutputStream os = exchange.getResponseBody()) {
+                        os.write(response.getBytes());
+                    }
+                });
+                server.start();
+                System.out.println("Dummy HTTP server started on port " + port);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+
     try {
       System.setProperty("https.protocols", "TLSv1.2, TLSv1.3");
       botsApi = new TelegramBotsApi(DefaultBotSession.class);
