@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -17,7 +19,9 @@ import static org.mockito.Mockito.when;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import nl.altindag.log.LogCaptor;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,12 +29,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Chat;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 import com.github.errebenito.metallumbot.command.CommandRunner;
 import com.github.errebenito.metallumbot.command.CommandRunnerFactory;
 import com.github.errebenito.metallumbot.command.CommandRunnerFactoryImpl;
@@ -43,7 +49,8 @@ import com.github.errebenito.metallumbot.command.CommandRunnerFactoryImpl;
  */
 @ExtendWith(MockitoExtension.class)
 class MetallumBotTest {
-   
+  private static final String TOKEN = System.getenv("METALLUM_BOT_TOKEN");
+  
   @BeforeEach
   void setUp() {
     System.setProperty("https.protocols", "TLSv1.2");
@@ -54,9 +61,7 @@ class MetallumBotTest {
   void testOnUpdateReceived(final String command) throws MalformedURLException, TelegramApiException {
     final Message message = new Message();
     message.setText(command);
-    final Chat chat = new Chat();
-    final long chatId = Long.parseLong(System.getenv("CHAT_ID"));
-    chat.setId(chatId);
+    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
     message.setChat(chat);
     Update updateMock = mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(true);
@@ -70,19 +75,35 @@ class MetallumBotTest {
       when(runnerMock.doUpcoming()).thenReturn("Upcoming");
     }
     final MetallumBot bot = spy(new MetallumBot(factoryMock));
-    doReturn(null).when(bot).execute(any(SendMessage.class));
-    bot.onUpdateReceived(updateMock);
+    doNothing().when(bot).sendMessage(any(SendMessage.class));
+    bot.consume(updateMock);
     verify(bot).sendMessage(any(SendMessage.class));
     verify(updateMock, atLeastOnce()).hasMessage();
     verify(updateMock, atLeastOnce()).getMessage();
   }
   
   @Test
+  void testSendMessageExecutesMessage() throws TelegramApiException {
+    final Message message = new Message();
+    message.setText("test");
+    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
+    message.setChat(chat);
+    SendMessage sendMessage = new SendMessage(message.getChatId().toString(), message.getText());
+    TelegramClient telegramClientMock = mock(OkHttpTelegramClient.class);
+    CommandRunnerFactory factoryMock = mock(CommandRunnerFactory.class);
+    MetallumBot metallumBot = new MetallumBot(factoryMock, telegramClientMock);
+
+    metallumBot.sendMessage(sendMessage);
+
+    verify(telegramClientMock).execute(sendMessage);
+  }
+
+  @Test
   void testOnUpdateReceivedWithoutMessage() {
     Update updateMock = mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(false);
     final MetallumBot bot = new MetallumBot(new CommandRunnerFactoryImpl());
-    bot.onUpdateReceived(updateMock);
+    bot.consume(updateMock);
     verify(updateMock, atLeastOnce()).hasMessage();
     verify(updateMock, never()).getMessage();
   }
@@ -95,7 +116,7 @@ class MetallumBotTest {
     when(updateMock.hasMessage()).thenReturn(true);
     when(updateMock.getMessage()).thenReturn(messageMock);
     final MetallumBot bot = new MetallumBot(new CommandRunnerFactoryImpl());
-    bot.onUpdateReceived(updateMock);
+    bot.consume(updateMock);
     verify(updateMock, atLeastOnce()).hasMessage();
     verify(updateMock, atLeastOnce()).getMessage();
     verify(messageMock, atLeastOnce()).hasText();
@@ -106,9 +127,7 @@ class MetallumBotTest {
   void testOnUpdateReceivedThrowsException(String command) throws MalformedURLException {
     final Message message = new Message();
     message.setText(command);
-    final Chat chat = new Chat();
-    final long chatId = Long.parseLong(System.getenv("CHAT_ID"));
-    chat.setId(chatId);
+    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
     message.setChat(chat);
     Update updateMock = mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(true);
@@ -116,7 +135,7 @@ class MetallumBotTest {
     CommandRunnerFactory factoryMock = mock(CommandRunnerFactory.class);
     when(factoryMock.create(any(URL.class))).thenThrow(new MalformedURLException("Invalid URL"));
     final MetallumBot bot = new MetallumBot(factoryMock);
-    bot.onUpdateReceived(updateMock);
+    bot.consume(updateMock);
     verify(updateMock, atLeastOnce()).getMessage();
     verify(factoryMock).create(any(URL.class));
   }
@@ -125,9 +144,7 @@ class MetallumBotTest {
   void testOnUpdateReceivedLogsErrorWhenExecuteFailsForStart() {
     final Message message = new Message();
     message.setText("/start");
-    final Chat chat = new Chat();
-    final long chatId = Long.parseLong(System.getenv("CHAT_ID"));
-    chat.setId(chatId);
+    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
     message.setChat(chat);
     final Update updateMock =  mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(true);
@@ -138,7 +155,7 @@ class MetallumBotTest {
         throw new TelegramApiException("Simulated failure");
       }
     };
-    bot.onUpdateReceived(updateMock);
+    bot.consume(updateMock);
     verify(updateMock, atLeastOnce()).getMessage();
   }
 
@@ -147,9 +164,7 @@ class MetallumBotTest {
   void testDoBandCallsSendMessage() throws MalformedURLException {
     Message message = new Message();
     message.setText("/band");
-    Chat chat = new Chat();
-    long chatId = Long.parseLong(System.getenv("CHAT_ID"));
-    chat.setId(chatId);
+    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
     message.setChat(chat);
     Update updateMock = mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(true);
@@ -166,7 +181,7 @@ class MetallumBotTest {
       }
     };
 
-    bot.onUpdateReceived(updateMock);
+    bot.consume(updateMock);
     verify(factoryMock).create(any(URL.class));
     verify(runnerMock).doBand();
     verify(updateMock, atLeastOnce()).getMessage();
@@ -179,9 +194,7 @@ class MetallumBotTest {
   void testDoUpcomingCallsSendMessage() throws MalformedURLException {
     Message message = new Message();
     message.setText("/upcoming");
-    Chat chat = new Chat();
-    long chatId = Long.parseLong(System.getenv("CHAT_ID"));
-    chat.setId(chatId);
+    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
     message.setChat(chat);
     Update updateMock = mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(true);
@@ -198,7 +211,7 @@ class MetallumBotTest {
       }
     };
 
-    bot.onUpdateReceived(updateMock);
+    bot.consume(updateMock);
     verify(factoryMock).create(any(URL.class));
     verify(runnerMock).doUpcoming();
     verify(updateMock, atLeastOnce()).getMessage();
@@ -211,9 +224,7 @@ class MetallumBotTest {
   void testDefaultCaseCallsSendMessage() {
     Message message = new Message();
     message.setText("/invalid");
-    Chat chat = new Chat();
-    long chatId = Long.parseLong(System.getenv("CHAT_ID"));
-    chat.setId(chatId);
+    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
     message.setChat(chat);
     Update updateMock = mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(true);
@@ -225,7 +236,7 @@ class MetallumBotTest {
         captured[0] = message;
       }
     };
-    bot.onUpdateReceived(updateMock);
+    bot.consume(updateMock);
     SendMessage sent = captured[0];
     assertNotNull(sent);
     assertTrue(sent.getText().contains("Usage"));
@@ -233,46 +244,54 @@ class MetallumBotTest {
   
   @Test
   void testInitializeBotRegistersBot() throws Exception {
-    try (MockedConstruction<TelegramBotsApi> constructorMock = mockConstruction(
-        TelegramBotsApi.class, 
+    try (MockedConstruction<TelegramBotsLongPollingApplication> constructorMock = mockConstruction(
+        TelegramBotsLongPollingApplication.class, 
         (mock, context) -> {
-          when(mock.registerBot(any(MetallumBot.class))).thenReturn(null);
+          when(mock.registerBot(eq(TOKEN), any(MetallumBot.class))).thenReturn(null);
         })) {
       MetallumBot.initializeBot();
-      TelegramBotsApi constructed = constructorMock.constructed().get(0);
-      verify(constructed).registerBot(any(MetallumBot.class));
+      TelegramBotsLongPollingApplication constructed = constructorMock.constructed().get(0);
+      verify(constructed).registerBot(eq(TOKEN), any(MetallumBot.class));
     }
   }
 
   @Test
   void testInitializeBotHandlesTelegramApiExceptionWithLogging() {
-    LogCaptor logCaptor = LogCaptor.forClass(MetallumBot.class);
-    try (var _ = mockConstruction(TelegramBotsApi.class, (mock, context) -> {
-        doThrow(new TelegramApiException("test")).when(mock).registerBot(any());
+    LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+    LoggerConfig loggerConfig = loggerContext.getConfiguration().getLoggerConfig(MetallumBot.class.getName());
+
+    // Create a ListAppender and start it
+    TestListAppender appender = TestListAppender.create("TestListAppender");
+    appender.start();
+
+    // Add appender to logger config
+    loggerConfig.addAppender(appender, null, null);
+    loggerContext.updateLoggers(); // Important to update
+    try (var _ = mockConstruction(TelegramBotsLongPollingApplication.class, (mock, context) -> {
+        when(mock.registerBot(eq(TOKEN), any())).thenThrow(new TelegramApiException("test"));
       })) {
       MetallumBot.initializeBot();
     }
-    List<String> logs = logCaptor.getErrorLogs();
-    assertTrue(logs.stream().anyMatch(msg -> msg.contains("Error setting up and registering bot")),
+    List<String> errorMessages = appender.getFormattedMessages();
+
+    assertTrue(errorMessages.stream().anyMatch(msg -> msg.contains("Error setting up and registering bot")),
                "Expected log message was not found");
-    }
+
+    // Remove the appender after test
+    loggerConfig.removeAppender("TestListAppender");
+    appender.stop();
+    loggerContext.updateLoggers();
+  }
 
   @Test
   void testMainCallsInitializeBot() throws Exception {
-    try (MockedConstruction<TelegramBotsApi> mocked = mockConstruction(
-      TelegramBotsApi.class,
+    try (MockedConstruction<TelegramBotsLongPollingApplication> mocked = mockConstruction(
+        TelegramBotsLongPollingApplication.class,
       (mock, context) -> {
         })) {
           MetallumBot.main(new String[]{});
-          TelegramBotsApi botsApi = mocked.constructed().get(0);
-          verify(botsApi).registerBot(any()); // or any(MetallumBot.class)
+          TelegramBotsLongPollingApplication bot = mocked.constructed().get(0);
+          verify(bot).registerBot(eq(TOKEN), any());
       }
-  }
-  
-  @Test
-  void testGetBotUsername() {
-    final MetallumBot bot = new MetallumBot(new CommandRunnerFactoryImpl());
-    assertEquals(System.getenv("METALLUM_BOT_NAME"),
-        bot.getBotUsername(), "Bot returned incorrect name");
   }
 }

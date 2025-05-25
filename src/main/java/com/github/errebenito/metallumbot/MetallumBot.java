@@ -1,19 +1,22 @@
 package com.github.errebenito.metallumbot;
 
+import java.net.MalformedURLException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
+import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
+
 import com.github.errebenito.metallumbot.command.CommandRunner;
 import com.github.errebenito.metallumbot.command.CommandRunnerFactory;
 import com.github.errebenito.metallumbot.command.CommandRunnerFactoryImpl;
 import com.github.errebenito.metallumbot.connector.UrlType;
 import com.github.errebenito.metallumbot.utils.MessageUtils;
-import java.net.MalformedURLException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 /**
  * Main bot class.
@@ -22,7 +25,7 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
  *
  */
 
-public class MetallumBot extends TelegramLongPollingBot {
+public class MetallumBot implements LongPollingSingleThreadUpdateConsumer {
   
   private static final Logger LOGGER = LoggerFactory.getLogger(MetallumBot.class);
 
@@ -39,22 +42,30 @@ public class MetallumBot extends TelegramLongPollingBot {
   private static final String NAME = System.getenv("METALLUM_BOT_NAME");
 
   private final CommandRunnerFactory factory;
+  
+  private final TelegramClient client;
 
   /**
    * Constructor.
    */
-  public MetallumBot(CommandRunnerFactory factory) {
-    super(TOKEN);
+  public MetallumBot(CommandRunnerFactory factory, TelegramClient client) {
     this.factory = factory;
+    this.client = client;
   }
   
+  /**
+   * Constructor.
+   */
+  public MetallumBot(CommandRunnerFactory factory) {
+    this(factory, new OkHttpTelegramClient(TOKEN));
+  }
   /**
    * Method for receiving messages.
 
    * @param update Contains a message from the user.
    */
   @Override
-  public void onUpdateReceived(final Update update) {
+  public void consume(final Update update) {
     CommandRunner runner;
     if (update.hasMessage() && update.getMessage().hasText()) {
       final String messageText = update.getMessage().getText();
@@ -62,7 +73,7 @@ public class MetallumBot extends TelegramLongPollingBot {
         case "/band" -> {
           try {
             runner = this.factory.create(UrlType.RANDOM_BAND.getUrl());
-            sendMessage(MessageUtils.generateMessage(update.getMessage().getChatId(), runner.doBand()));
+            sendMessage(MessageUtils.generateMessage(update.getMessage().getChatId().toString(), runner.doBand()));
           } catch (TelegramApiException | MalformedURLException _) {
             LOGGER.error(ERROR_MESSAGE);
           }
@@ -70,7 +81,7 @@ public class MetallumBot extends TelegramLongPollingBot {
         case "/upcoming" -> {
           try {
             runner = this.factory.create(UrlType.UPCOMING_RELEASES.getUrl());
-            sendMessage(MessageUtils.generateMessage(update.getMessage().getChatId(),
+            sendMessage(MessageUtils.generateMessage(update.getMessage().getChatId().toString(),
                 runner.doUpcoming()));
           } catch (TelegramApiException | MalformedURLException _) {
             LOGGER.error(ERROR_MESSAGE);
@@ -78,7 +89,7 @@ public class MetallumBot extends TelegramLongPollingBot {
         }
         default -> {
           try {
-            sendMessage(MessageUtils.generateMessage(update.getMessage().getChatId(), USAGE));
+            sendMessage(MessageUtils.generateMessage(update.getMessage().getChatId().toString(), USAGE));
           } catch (TelegramApiException _) {
             LOGGER.error(ERROR_MESSAGE);
           }
@@ -86,19 +97,9 @@ public class MetallumBot extends TelegramLongPollingBot {
       }
     }
   }
-      
-  /**
-   * Returns the bot name which was specified during registration.
-
-   * @return The bot name
-   */
-  @Override
-  public String getBotUsername() {
-    return NAME;
-  }
-
+  
   protected void sendMessage(SendMessage message) throws TelegramApiException {
-    execute(message);
+    client.execute(message);
   }
 
   /**
@@ -111,12 +112,11 @@ public class MetallumBot extends TelegramLongPollingBot {
   }
   
   static void initializeBot() {
-    TelegramBotsApi botsApi;
-
     try {
-      System.setProperty("https.protocols", "TLSv1.2, TLSv1.3");
-      botsApi = new TelegramBotsApi(DefaultBotSession.class);
-      botsApi.registerBot(new MetallumBot(new CommandRunnerFactoryImpl()));
+      System.setProperty("https.protocols", "TLSv1.2,TLSv1.3");
+      TelegramBotsLongPollingApplication bot = new TelegramBotsLongPollingApplication();
+      bot.registerBot(TOKEN, new MetallumBot(new CommandRunnerFactoryImpl()));
+      
     } catch (TelegramApiException _) {
       LOGGER.error("Error setting up and registering bot");
     }
