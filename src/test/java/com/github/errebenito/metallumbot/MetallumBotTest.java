@@ -273,7 +273,7 @@ class MetallumBotTest {
 
     TestListAppender appender = attachTestAppender(MetallumBot.class);
 
-    try (MockedConstruction<TelegramBotsLongPollingApplication> _ = mockConstruction(
+    try (var _ = mockConstruction(
       TelegramBotsLongPollingApplication.class,
       (mock, context) -> {
         when(mock.registerBot(eq(TOKEN), any())).thenThrow(new TelegramApiException("test"));
@@ -290,7 +290,7 @@ class MetallumBotTest {
   }
 
   @Test
-  void testInitializeBotHandlesGenericException() throws Exception {
+  void testInitializeBotHandlesGenericException() {
     LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
     TestListAppender appender = attachTestAppender(MetallumBot.class);
 
