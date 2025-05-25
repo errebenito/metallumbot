@@ -15,7 +15,7 @@ class MessageUtilsTest {
 
   @Test
   void testGeneratedMessageContainsCorrectChatId() {
-    final SendMessage message = MessageUtils.generateMessage(1L, "message");
+    final SendMessage message = MessageUtils.generateMessage("1", "message");
     assertEquals("1", message.getChatId(), "The message contains the wrong chatId");
   }
 }

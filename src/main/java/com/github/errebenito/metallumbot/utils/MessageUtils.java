@@ -21,10 +21,7 @@ public final class MessageUtils {
    * @param text The content of the message.
    * @return An instance of SendMessage.
    */
-  public static SendMessage generateMessage(final Long chatId, final String text) {
-    final SendMessage message = new SendMessage();
-    message.setChatId(chatId);
-    message.setText(text);
-    return message;
+  public static SendMessage generateMessage(final String chatId, final String text) {
+    return new SendMessage(chatId, text);
   }
 }
