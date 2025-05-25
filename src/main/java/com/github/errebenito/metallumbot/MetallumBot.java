@@ -39,8 +39,6 @@ public class MetallumBot implements LongPollingSingleThreadUpdateConsumer {
 
   private static final String TOKEN = System.getenv("METALLUM_BOT_TOKEN");
 
-  private static final String NAME = System.getenv("METALLUM_BOT_NAME");
-
   private final CommandRunnerFactory factory;
   
   private final TelegramClient client;
@@ -112,13 +110,11 @@ public class MetallumBot implements LongPollingSingleThreadUpdateConsumer {
   }
   
   static void initializeBot() {
-    try {
-      System.setProperty("https.protocols", "TLSv1.2,TLSv1.3");
-      TelegramBotsLongPollingApplication bot = new TelegramBotsLongPollingApplication();
+    System.setProperty("https.protocols", "TLSv1.2,TLSv1.3");
+    try (TelegramBotsLongPollingApplication bot = new TelegramBotsLongPollingApplication()) {
       bot.registerBot(TOKEN, new MetallumBot(new CommandRunnerFactoryImpl()));
-      
-    } catch (TelegramApiException _) {
-      LOGGER.error("Error setting up and registering bot");
+    } catch (TelegramApiException e) {
+      LOGGER.error("Error setting up and registering bot", e);
     }
   }
 }
