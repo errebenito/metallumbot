@@ -114,6 +114,7 @@ public class MetallumBot implements LongPollingSingleThreadUpdateConsumer {
     initializeBot(new TelegramBotsLongPollingApplicationFactoryImpl());
   }
 
+  @SuppressWarnings("squid:S2095") // Bot must remain open if successfully registered
   static void initializeBot(TelegramBotsLongPollingApplicationFactory factory) {
     System.setProperty("https.protocols", "TLSv1.2,TLSv1.3");
     TelegramBotsLongPollingApplication bot = null;

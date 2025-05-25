@@ -25,7 +25,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -269,12 +268,12 @@ class MetallumBotTest {
   }
 
   @Test
-  void testInitializeBotHandlesTelegramApiExceptionWithLogging() throws Exception {
+  void testInitializeBotHandlesTelegramApiExceptionWithLogging() {
     LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
 
     TestListAppender appender = attachTestAppender(MetallumBot.class);
 
-    try (MockedConstruction<TelegramBotsLongPollingApplication> ignored = mockConstruction(
+    try (MockedConstruction<TelegramBotsLongPollingApplication> _ = mockConstruction(
       TelegramBotsLongPollingApplication.class,
       (mock, context) -> {
         when(mock.registerBot(eq(TOKEN), any())).thenThrow(new TelegramApiException("test"));
