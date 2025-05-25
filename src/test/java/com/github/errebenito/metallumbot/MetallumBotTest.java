@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.never;
@@ -18,10 +19,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -29,6 +33,7 @@ import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
+import org.telegram.telegrambots.longpolling.BotSession;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
@@ -56,7 +61,7 @@ class MetallumBotTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"/band", "/upcoming"})
-  void testOnUpdateReceived(final String command) throws MalformedURLException, TelegramApiException {
+  void testConsume(final String command) throws MalformedURLException, TelegramApiException {
     final Message message = new Message();
     message.setText(command);
     final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
@@ -97,7 +102,7 @@ class MetallumBotTest {
   }
 
   @Test
-  void testOnUpdateReceivedWithoutMessage() {
+  void testConsumeWithoutMessage() {
     Update updateMock = mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(false);
     final MetallumBot bot = new MetallumBot(new CommandRunnerFactoryImpl());
@@ -107,7 +112,7 @@ class MetallumBotTest {
   }
   
   @Test
-  void testOnUpdateReceivedWithEmptyMessage() {
+  void testConsumeWithEmptyMessage() {
     Message messageMock = mock(Message.class);
     when(messageMock.hasText()).thenReturn(false);
     Update updateMock = mock(Update.class);
@@ -122,7 +127,8 @@ class MetallumBotTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"/band", "/upcoming"})
-  void testOnUpdateReceivedThrowsException(String command) throws MalformedURLException {
+  void testConsumeThrowsException(String command) throws MalformedURLException {
+    TestListAppender appender = attachTestAppender(MetallumBot.class);
     final Message message = new Message();
     message.setText(command);
     final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
@@ -134,12 +140,18 @@ class MetallumBotTest {
     when(factoryMock.create(any(URL.class))).thenThrow(new MalformedURLException("Invalid URL"));
     final MetallumBot bot = new MetallumBot(factoryMock);
     bot.consume(updateMock);
+    List<String> messages = appender.getFormattedMessages();
+    assertTrue(messages.stream().anyMatch(msg -> msg.contains("Error sending message")),
+               "Expected log message for invalid URL was not found");
     verify(updateMock, atLeastOnce()).getMessage();
     verify(factoryMock).create(any(URL.class));
+    appender.stop();
+    ((LoggerContext) LogManager.getContext(false)).updateLoggers();
   }
 
   @Test
-  void testOnUpdateReceivedLogsErrorWhenExecuteFailsForStart() {
+  void testConsumeLogsErrorWhenExecuteFailsForStart() {
+    TestListAppender appender = attachTestAppender(MetallumBot.class);
     final Message message = new Message();
     message.setText("/start");
     final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
@@ -154,7 +166,12 @@ class MetallumBotTest {
       }
     };
     bot.consume(updateMock);
+    List<String> messages = appender.getFormattedMessages();
+    assertTrue(messages.stream().anyMatch(msg -> msg.contains("Error sending message")),
+               "Expected log message for simulated failure was not found");
     verify(updateMock, atLeastOnce()).getMessage();
+    appender.stop();
+    ((LoggerContext) LogManager.getContext(false)).updateLoggers();
   }
 
 
@@ -175,7 +192,7 @@ class MetallumBotTest {
     MetallumBot bot = new MetallumBot(factoryMock) {
       @Override
       protected void sendMessage(SendMessage message) throws TelegramApiException {
-        captured[0] = message; // capture manually
+        captured[0] = message;
       }
     };
 
@@ -205,7 +222,7 @@ class MetallumBotTest {
     MetallumBot bot = new MetallumBot(factoryMock) {
       @Override
       protected void sendMessage(SendMessage message) throws TelegramApiException {
-        captured[0] = message; // capture manually
+        captured[0] = message;
       }
     };
 
@@ -228,7 +245,7 @@ class MetallumBotTest {
     when(updateMock.hasMessage()).thenReturn(true);
     when(updateMock.getMessage()).thenReturn(message);
     final SendMessage[] captured = new SendMessage[1];
-    MetallumBot bot = new MetallumBot(null) { // no need for factory here
+    MetallumBot bot = new MetallumBot(null) {
       @Override
       protected void sendMessage(SendMessage message) throws TelegramApiException {
         captured[0] = message;
@@ -242,41 +259,54 @@ class MetallumBotTest {
   
   @Test
   void testInitializeBotRegistersBot() throws Exception {
-    try (MockedConstruction<TelegramBotsLongPollingApplication> constructorMock = mockConstruction(
-        TelegramBotsLongPollingApplication.class, 
-        (mock, context) -> {
-          when(mock.registerBot(eq(TOKEN), any(MetallumBot.class))).thenReturn(null);
-        })) {
-      MetallumBot.initializeBot();
-      TelegramBotsLongPollingApplication constructed = constructorMock.constructed().get(0);
-      verify(constructed).registerBot(eq(TOKEN), any(MetallumBot.class));
-    }
+    TelegramBotsLongPollingApplication botMock = mock(TelegramBotsLongPollingApplication.class);
+    when(botMock.registerBot(eq(TOKEN), any(MetallumBot.class))).thenReturn(mock(BotSession.class));
+
+    TelegramBotsLongPollingApplicationFactory factory = () -> botMock;
+    MetallumBot.initializeBot(factory);
+
+    verify(botMock).registerBot(eq(TOKEN), any(MetallumBot.class));
   }
 
   @Test
-  void testInitializeBotHandlesTelegramApiExceptionWithLogging() {
+  void testInitializeBotHandlesTelegramApiExceptionWithLogging() throws Exception {
     LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
-    LoggerConfig loggerConfig = loggerContext.getConfiguration().getLoggerConfig(MetallumBot.class.getName());
 
-    // Create a ListAppender and start it
-    TestListAppender appender = TestListAppender.create("TestListAppender");
-    appender.start();
+    TestListAppender appender = attachTestAppender(MetallumBot.class);
 
-    // Add appender to logger config
-    loggerConfig.addAppender(appender, null, null);
-    loggerContext.updateLoggers(); // Important to update
-    try (var _ = mockConstruction(TelegramBotsLongPollingApplication.class, (mock, context) -> {
+    try (MockedConstruction<TelegramBotsLongPollingApplication> ignored = mockConstruction(
+      TelegramBotsLongPollingApplication.class,
+      (mock, context) -> {
         when(mock.registerBot(eq(TOKEN), any())).thenThrow(new TelegramApiException("test"));
       })) {
       MetallumBot.initializeBot();
     }
-    List<String> errorMessages = appender.getFormattedMessages();
 
-    assertTrue(errorMessages.stream().anyMatch(msg -> msg.contains("Error setting up and registering bot")),
-               "Expected log message was not found");
+    List<String> messages = appender.getFormattedMessages();
+    assertTrue(messages.stream().anyMatch(msg -> msg.contains("Error setting up and registering bot")),
+             "Expected log message was not found");
 
-    // Remove the appender after test
-    loggerConfig.removeAppender("TestListAppender");
+    appender.stop();
+    loggerContext.updateLoggers();
+  }
+
+  @Test
+  void testInitializeBotHandlesGenericException() throws Exception {
+    LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+    TestListAppender appender = attachTestAppender(MetallumBot.class);
+
+    TelegramBotsLongPollingApplicationFactory factory = mock(TelegramBotsLongPollingApplicationFactory.class);
+    when(factory.create()).thenThrow(new RuntimeException("Simulated generic exception"));
+
+    MetallumBot.initializeBot(factory);
+
+    // bot is null, so closeQuietly won't call close
+
+    List<String> messages = appender.getFormattedMessages();
+    assertTrue(messages.stream()
+      .anyMatch(msg -> msg.contains("Unexpected exception during bot initialization")),
+      "Expected log message for generic exception not found");
+
     appender.stop();
     loggerContext.updateLoggers();
   }
@@ -291,5 +321,50 @@ class MetallumBotTest {
           TelegramBotsLongPollingApplication bot = mocked.constructed().get(0);
           verify(bot).registerBot(eq(TOKEN), any());
       }
+  }
+
+  @Test
+  void testCloseQuietlyLogsWarningOnException() throws Exception {
+    LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+    TestListAppender appender = attachTestAppender(MetallumBot.class);
+
+    TelegramBotsLongPollingApplication mockBot = mock(TelegramBotsLongPollingApplication.class);
+    TelegramBotsLongPollingApplicationFactory factory = mock(TelegramBotsLongPollingApplicationFactory.class);
+
+    when(factory.create()).thenReturn(mockBot);
+    // Simulate registerBot throwing an exception, so registered = false and closeQuietly called
+    when(mockBot.registerBot(eq(System.getenv("METALLUM_BOT_TOKEN")), any(MetallumBot.class)))
+      .thenThrow(new RuntimeException("Simulated registerBot failure"));
+    // Simulate close() throwing exception
+    doThrow(new RuntimeException("Exception while closing bot")).when(mockBot).close();
+
+    MetallumBot.initializeBot(factory);
+
+    List<String> messages = appender.getFormattedMessages();
+    // Should contain the warning log about exception while closing bot
+    boolean foundWarn = messages.stream().anyMatch(msg -> msg.contains("Exception while closing bot"));
+    assertTrue(foundWarn, "Expected warning log message for exception during close not found");
+
+    appender.stop();
+    loggerContext.updateLoggers();
+  }
+
+  private TestListAppender attachTestAppender(Class<?> clazz) {
+    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    Configuration config = ctx.getConfiguration();
+    String loggerName = clazz.getName();
+
+    TestListAppender appender = TestListAppender.create("TestListAppender");
+    appender.start();
+
+    LoggerConfig loggerConfig = new LoggerConfig(loggerName, Level.ALL, true);
+    loggerConfig.addAppender(appender, Level.ALL, null);
+
+    config.removeLogger(loggerName);
+
+    config.addLogger(loggerName, loggerConfig);
+
+    ctx.updateLoggers();
+    return appender;
   }
 }

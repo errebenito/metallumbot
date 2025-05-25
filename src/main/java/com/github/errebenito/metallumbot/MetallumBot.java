@@ -2,8 +2,8 @@ package com.github.errebenito.metallumbot;
 
 import java.net.MalformedURLException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
@@ -27,7 +27,7 @@ import com.github.errebenito.metallumbot.utils.MessageUtils;
 
 public class MetallumBot implements LongPollingSingleThreadUpdateConsumer {
   
-  private static final Logger LOGGER = LoggerFactory.getLogger(MetallumBot.class);
+  private static final Logger LOGGER = LogManager.getLogger(MetallumBot.class);
 
   private static final String ERROR_MESSAGE = "Error sending message";
 
@@ -72,8 +72,8 @@ public class MetallumBot implements LongPollingSingleThreadUpdateConsumer {
           try {
             runner = this.factory.create(UrlType.RANDOM_BAND.getUrl());
             sendMessage(MessageUtils.generateMessage(update.getMessage().getChatId().toString(), runner.doBand()));
-          } catch (TelegramApiException | MalformedURLException _) {
-            LOGGER.error(ERROR_MESSAGE);
+          } catch (TelegramApiException | MalformedURLException ex) {
+            LOGGER.error(ERROR_MESSAGE, ex);
           }
         }
         case "/upcoming" -> {
@@ -81,15 +81,15 @@ public class MetallumBot implements LongPollingSingleThreadUpdateConsumer {
             runner = this.factory.create(UrlType.UPCOMING_RELEASES.getUrl());
             sendMessage(MessageUtils.generateMessage(update.getMessage().getChatId().toString(),
                 runner.doUpcoming()));
-          } catch (TelegramApiException | MalformedURLException _) {
-            LOGGER.error(ERROR_MESSAGE);
+          } catch (TelegramApiException | MalformedURLException ex) {
+            LOGGER.error(ERROR_MESSAGE, ex);
           }
         }
         default -> {
           try {
             sendMessage(MessageUtils.generateMessage(update.getMessage().getChatId().toString(), USAGE));
-          } catch (TelegramApiException _) {
-            LOGGER.error(ERROR_MESSAGE);
+          } catch (TelegramApiException ex) {
+            LOGGER.error(ERROR_MESSAGE, ex);
           }
         }
       }
@@ -106,15 +106,40 @@ public class MetallumBot implements LongPollingSingleThreadUpdateConsumer {
    * @param args The arguments.
    */
   public static void main(final String[] args) {
-    initializeBot();
+    initializeBot(new TelegramBotsLongPollingApplicationFactoryImpl());
   }
   
-  static void initializeBot() {
+
+  public static void initializeBot() {
+    initializeBot(new TelegramBotsLongPollingApplicationFactoryImpl());
+  }
+
+  static void initializeBot(TelegramBotsLongPollingApplicationFactory factory) {
     System.setProperty("https.protocols", "TLSv1.2,TLSv1.3");
-    try (TelegramBotsLongPollingApplication bot = new TelegramBotsLongPollingApplication()) {
+    TelegramBotsLongPollingApplication bot = null;
+    boolean registered = false;
+    try {
+      bot = factory.create();
       bot.registerBot(TOKEN, new MetallumBot(new CommandRunnerFactoryImpl()));
+      registered = true;
     } catch (TelegramApiException e) {
       LOGGER.error("Error setting up and registering bot", e);
+    } catch (Exception e) {
+      LOGGER.error("Unexpected exception during bot initialization", e);
+    } finally {
+      if (!registered) {
+        closeQuietly(bot);
+      }
+    }
+  }
+
+  private static void closeQuietly(TelegramBotsLongPollingApplication bot) {
+    if (bot != null) {
+      try {
+        bot.close();
+      } catch (Exception ex) {
+        LOGGER.warn("Exception while closing bot", ex);
+      }
     }
   }
 }
