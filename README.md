@@ -7,7 +7,7 @@ A simple Telegram bot written in Java to retrieve information from [Metal Archiv
 
 ## Requirements
 
-- Java 23+
+- Java 24+
 
 - Maven
 
@@ -15,18 +15,12 @@ A simple Telegram bot written in Java to retrieve information from [Metal Archiv
 
 - Retrieve the link to a random band's page.
 
-- Retrieve the first 10 upcoming albums from the upcoming albums list.
+- Retrieve the link to a random upcoming release's page.
 
 ## Configuration
 The bot requires the following two environment variables to exist:
 
 - METALLUM_BOT_TOKEN: Your telegram bot token.
-
-- METALLUM_BOT_NAME: Your telegram bot username.
-
-Additionally, some tests make use of the following environment variable:
-
-- CHAT_ID: The unique ID of the chat where the bot's messages should be sent.
 
 ## Building the bot
 

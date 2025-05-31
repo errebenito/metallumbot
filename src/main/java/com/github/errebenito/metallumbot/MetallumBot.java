@@ -35,7 +35,7 @@ public class MetallumBot implements LongPollingSingleThreadUpdateConsumer {
   Usage:
 
       /band Returns a random band
-      /upcoming Returns a partial list of upcoming releases""";
+      /upcoming Returns a random upcoming release""";
 
   private static final String TOKEN = System.getenv("METALLUM_BOT_TOKEN");
 
