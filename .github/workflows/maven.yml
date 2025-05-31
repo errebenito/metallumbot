@@ -54,7 +54,5 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        CHAT_ID: ${{ secrets.CHAT_ID }}
         METALLUM_BOT_TOKEN: ${{ secrets.METALLUM_BOT_TOKEN }}
-        METALLUM_BOT_NAME: ${{ secrets.METALLUM_BOT_NAME }}
       run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=errebenito_metallumbot package --file pom.xml

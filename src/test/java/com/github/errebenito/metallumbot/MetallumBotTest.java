@@ -51,11 +51,13 @@ import com.github.errebenito.metallumbot.command.CommandRunnerFactoryImpl;
  */
 @ExtendWith(MockitoExtension.class)
 class MetallumBotTest {
+  private static final String DEFAULT_ALBUM = "https://www.metal-archives.com/albums/Black_Sabbath/Black_Sabbath/482";
+  private static final String DEFAULT_BAND = "https://www.metal-archives.com/bands/Black%20Sabbath";
   private static final String TOKEN = System.getenv("METALLUM_BOT_TOKEN");
   
   @BeforeEach
   void setUp() {
-    System.setProperty("https.protocols", "TLSv1.2");
+    System.setProperty("https.protocols", "TLSv1.2,TLSv1.3");
   }
 
   @ParameterizedTest
@@ -63,7 +65,7 @@ class MetallumBotTest {
   void testConsume(final String command) throws MalformedURLException, TelegramApiException {
     final Message message = new Message();
     message.setText(command);
-    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
+    final Chat chat = Chat.builder().id(Long.parseLong("1")).type("private").build();
     message.setChat(chat);
     Update updateMock = mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(true);
@@ -72,9 +74,9 @@ class MetallumBotTest {
     CommandRunner runnerMock = mock(CommandRunner.class);
     when(factoryMock.create(any(URL.class))).thenReturn(runnerMock);
     if("/band".equals(command)) {
-      when(runnerMock.doBand()).thenReturn("Band");
+      when(runnerMock.doBand()).thenReturn(DEFAULT_BAND);
     } else if ("/upcoming".equals(command)){
-      when(runnerMock.doUpcoming()).thenReturn("Upcoming");
+      when(runnerMock.doUpcoming()).thenReturn(DEFAULT_ALBUM);
     }
     final MetallumBot bot = spy(new MetallumBot(factoryMock));
     doNothing().when(bot).sendMessage(any(SendMessage.class));
@@ -88,7 +90,7 @@ class MetallumBotTest {
   void testSendMessageExecutesMessage() throws TelegramApiException {
     final Message message = new Message();
     message.setText("test");
-    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
+    final Chat chat = Chat.builder().id(Long.parseLong("1")).type("private").build();
     message.setChat(chat);
     SendMessage sendMessage = new SendMessage(message.getChatId().toString(), message.getText());
     TelegramClient telegramClientMock = mock(OkHttpTelegramClient.class);
@@ -130,7 +132,7 @@ class MetallumBotTest {
     TestListAppender appender = attachTestAppender(MetallumBot.class);
     final Message message = new Message();
     message.setText(command);
-    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
+    final Chat chat = Chat.builder().id(Long.parseLong("1")).type("private").build();
     message.setChat(chat);
     Update updateMock = mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(true);
@@ -153,7 +155,7 @@ class MetallumBotTest {
     TestListAppender appender = attachTestAppender(MetallumBot.class);
     final Message message = new Message();
     message.setText("/start");
-    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
+    final Chat chat = Chat.builder().id(Long.parseLong("1")).type("private").build();
     message.setChat(chat);
     final Update updateMock =  mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(true);
@@ -178,7 +180,7 @@ class MetallumBotTest {
   void testDoBandCallsSendMessage() throws MalformedURLException {
     Message message = new Message();
     message.setText("/band");
-    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
+    final Chat chat = Chat.builder().id(Long.parseLong("1")).type("private").build();
     message.setChat(chat);
     Update updateMock = mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(true);
@@ -186,7 +188,7 @@ class MetallumBotTest {
     CommandRunnerFactory factoryMock = mock(CommandRunnerFactory.class);
     CommandRunner runnerMock = mock(CommandRunner.class);
     when(factoryMock.create(any(URL.class))).thenReturn(runnerMock);
-    when(runnerMock.doBand()).thenReturn("Band Info");
+    when(runnerMock.doBand()).thenReturn(DEFAULT_BAND);
     final SendMessage[] captured = new SendMessage[1];
     MetallumBot bot = new MetallumBot(factoryMock) {
       @Override
@@ -201,14 +203,14 @@ class MetallumBotTest {
     verify(updateMock, atLeastOnce()).getMessage();
     SendMessage sent = captured[0];
     assertNotNull(sent);
-    assertEquals("Band Info", sent.getText());
+    assertEquals(DEFAULT_BAND, sent.getText());
   }
 
   @Test
   void testDoUpcomingCallsSendMessage() throws MalformedURLException {
     Message message = new Message();
     message.setText("/upcoming");
-    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
+    final Chat chat = Chat.builder().id(Long.parseLong("1")).type("private").build();
     message.setChat(chat);
     Update updateMock = mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(true);
@@ -216,7 +218,7 @@ class MetallumBotTest {
     CommandRunnerFactory factoryMock = mock(CommandRunnerFactory.class);
     CommandRunner runnerMock = mock(CommandRunner.class);
     when(factoryMock.create(any(URL.class))).thenReturn(runnerMock);
-    when(runnerMock.doUpcoming()).thenReturn("Upcoming Info");
+    when(runnerMock.doUpcoming()).thenReturn(DEFAULT_ALBUM);
     final SendMessage[] captured = new SendMessage[1];
     MetallumBot bot = new MetallumBot(factoryMock) {
       @Override
@@ -231,14 +233,14 @@ class MetallumBotTest {
     verify(updateMock, atLeastOnce()).getMessage();
     SendMessage sent = captured[0];
     assertNotNull(sent);
-    assertEquals("Upcoming Info", sent.getText());
+    assertEquals(DEFAULT_ALBUM, sent.getText());
   }
 
   @Test
   void testDefaultCaseCallsSendMessage() {
     Message message = new Message();
     message.setText("/invalid");
-    final Chat chat = Chat.builder().id(Long.parseLong(System.getenv("CHAT_ID"))).type("private").build();
+    final Chat chat = Chat.builder().id(Long.parseLong("1")).type("private").build();
     message.setChat(chat);
     Update updateMock = mock(Update.class);
     when(updateMock.hasMessage()).thenReturn(true);
@@ -275,7 +277,7 @@ class MetallumBotTest {
 
     try (var _ = mockConstruction(
       TelegramBotsLongPollingApplication.class,
-      (mock, context) -> {
+      (mock, _) -> {
         when(mock.registerBot(eq(TOKEN), any())).thenThrow(new TelegramApiException("test"));
       })) {
       MetallumBot.initializeBot();
@@ -314,7 +316,7 @@ class MetallumBotTest {
   void testMainCallsInitializeBot() throws Exception {
     try (MockedConstruction<TelegramBotsLongPollingApplication> mocked = mockConstruction(
         TelegramBotsLongPollingApplication.class,
-      (mock, context) -> {
+      (_, _) -> {
         })) {
           MetallumBot.main(new String[]{});
           TelegramBotsLongPollingApplication bot = mocked.constructed().get(0);
