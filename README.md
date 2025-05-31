@@ -7,7 +7,7 @@ A simple Telegram bot written in Java to retrieve information from [Metal Archiv
 
 ## Requirements
 
-- Java 23+
+- Java 24+
 
 - Maven
 
