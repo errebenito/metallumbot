@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.io.Serializable;
+import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.List;
 import jakarta.validation.Valid;
 
@@ -27,7 +27,7 @@ public class UpcomingAlbums implements Serializable {
 
   private static final String PROPERTY_NAME = "aaData";
 
-  private final Random random = new Random();
+  private final SecureRandom randomizer = new SecureRandom();
 
   @JsonProperty(PROPERTY_NAME)
   @Valid
@@ -45,7 +45,7 @@ public class UpcomingAlbums implements Serializable {
   
   @Override
   public String toString() {
-    return trimLink(this.getAlbumData().get(random.nextInt(this.albumData.size())).get(ALBUM_LINK_OFFSET)); 
+    return trimLink(this.getAlbumData().get(randomizer.nextInt(this.albumData.size())).get(ALBUM_LINK_OFFSET)); 
   }
    
   private String trimLink(final String link) {
