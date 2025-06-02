@@ -13,6 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sonar.organization>errebenito</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<telegrambots.version>8.3.0</telegrambots.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -23,33 +24,51 @@
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-bom</artifactId>
+				<version>5.18.0</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>org.junit</groupId>
+				<artifactId>junit-bom</artifactId>
+				<version>5.13.0</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-bom</artifactId>
+				<version>2.24.3</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.telegram</groupId>
 			<artifactId>telegrambots-longpolling</artifactId>
-			<version>8.3.0</version>
+			<version>${telegrambots.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.telegram</groupId>
 			<artifactId>telegrambots-client</artifactId>
-			<version>8.3.0</version>
+			<version>${telegrambots.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
-			<version>2.24.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.24.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j2-impl</artifactId>
-			<version>2.24.3</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.validation</groupId>
@@ -69,31 +88,26 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.13.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-params</artifactId>
-			<version>5.13.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
-			<version>5.13.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>5.18.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-junit-jupiter</artifactId>
-			<version>5.18.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
