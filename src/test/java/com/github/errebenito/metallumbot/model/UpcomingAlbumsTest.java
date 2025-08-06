@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-public class UpcomingAlbumsTest {
+class UpcomingAlbumsTest {
     @Test
     void shouldReturnTrimmedLink() {
     UpcomingAlbums albums = new UpcomingAlbums();
