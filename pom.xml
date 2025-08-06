@@ -149,7 +149,7 @@
 					<includes>
 						<include>com.github.errebenito.metallumbot.MetallumBotTest.java</include>
 						<include>com.github.errebenito.metallumbot.command.CommandRunnerTest.java</include>
-					  <include>com.github.errebenito.metallumbot.command.CommandRunnerFactoryTest.java</include>
+					  	<include>com.github.errebenito.metallumbot.command.CommandRunnerFactoryTest.java</include>
 						<include>com.github.errebenito.metallumbot.connector.UrlConnectorTest.java</include>
 						<include>com.github.errebenito.metallumbot.utils.MessageUtilsTest.java</include>
 					</includes>
