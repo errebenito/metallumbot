@@ -238,7 +238,16 @@
 				</dependencies>
 				<configuration>
 					<targetClasses>
-						<param>com.github.errebenito.metallumbot*</param>
+						<param>com.github.errebenito.metallumbot.MetallumBot</param>
+						<param>com.github.errebenito.metallumbot.TelegramBotsLongPollingApplicationFactory</param>
+						<param>com.github.errebenito.metallumbot.TelegramBotsLongPollingApplicationFactoryImpl</param>
+						<param>com.github.errebenito.metallumbot.command.CommandRunner</param>
+						<param>com.github.errebenito.metallumbot.command.CommandRunnerFactory</param>
+						<param>com.github.errebenito.metallumbot.command.CommandRunnerFactoryImpl</param>						
+						<param>com.github.errebenito.metallumbot.connector.UrlConnector</param>
+						<param>com.github.errebenito.metallumbot.command.UrlType</param>
+						<param>com.github.errebenito.metallumbot.model.UpcomingAlbums</param>
+						<param>com.github.errebenito.metallumbot.utils.MessageUtils</param>
 					</targetClasses>
 					<targetTests>
 						<param>com.github.errebenito.metallumbot.MetallumBotTest*</param>
@@ -254,6 +263,10 @@
 					</outputFormats>
 					<timestampedReports>false</timestampedReports>
 					<failWhenNoMutations>false</failWhenNoMutations>
+					<verbose>true</verbose>
+  					<exportLineCoverage>true</exportLineCoverage>
+					<historyInputFile>target/pitHistory.xml</historyInputFile>
+  					<historyOutputFile>target/pitHistory.xml</historyOutputFile>
 				</configuration>
 			</plugin>
 		</plugins>
