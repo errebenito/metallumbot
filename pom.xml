@@ -152,6 +152,7 @@
 					  	<include>com.github.errebenito.metallumbot.command.CommandRunnerFactoryTest.java</include>
 						<include>com.github.errebenito.metallumbot.connector.UrlConnectorTest.java</include>
 						<include>com.github.errebenito.metallumbot.utils.MessageUtilsTest.java</include>
+						<include>com.github.errebenito.metallumbot.model.UpcomingAlbumsTest.java</include>
 					</includes>
 				</configuration>
 			</plugin>
@@ -221,14 +222,13 @@
 				<version>1.20.1</version>
 				<executions>
 					<execution>
-						<?m2e execute onConfiguration,onIncremental?>
 						<id>pit-report</id>
 						<phase>test-compile</phase>
 						<goals>
 							<goal>mutationCoverage</goal>
 						</goals>
 					</execution>
-			</executions>
+				</executions>
 				<dependencies>
 					<dependency>
 						<groupId>org.pitest</groupId>
@@ -246,6 +246,7 @@
 						<param>com.github.errebenito.metallumbot.command.CommandRunnerFactoryTest*</param>
 						<param>com.github.errebenito.metallumbot.connector.UrlConnectorTest*</param>
 						<param>com.github.errebenito.metallumbot.utils.MessageUtilsTest*</param>
+						<param>com.github.errebenito.metallumbot.model.UpcomingAlbumsTest*</param>
 					</targetTests>
 					<outputFormats>
 						<outputFormat>xml</outputFormat>
