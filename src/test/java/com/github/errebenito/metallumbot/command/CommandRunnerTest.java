@@ -3,8 +3,10 @@ package com.github.errebenito.metallumbot.command;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,8 +47,9 @@ class CommandRunnerTest {
 
   @Test
   void whenDoUpcomingShouldReturnAlbumLink() throws MalformedURLException {
+    URL url = new File("src/test/resources/upcoming_albums_test_data.json").toURI().toURL();
     runner = new CommandRunner(new UrlConnector()
-        .withUrl(UrlType.UPCOMING_RELEASES.getUrl()));
+        .withUrl(url));
     final String result = runner.doUpcoming();
     assertTrue(result.contains("https://www.metal-archives.com/albums/"), "Return value did not contain an album link: " + result);
   }  
