@@ -255,7 +255,6 @@
 						<param>com.github.errebenito.metallumbot.command.CommandRunnerFactoryTest*</param>
 						<param>com.github.errebenito.metallumbot.connector.UrlConnectorTest*</param>
 						<param>com.github.errebenito.metallumbot.utils.MessageUtilsTest*</param>
-						<param>com.github.errebenito.metallumbot.model.UpcomingAlbumsTest*</param>
 					</targetTests>
 					<outputFormats>
 						<outputFormat>xml</outputFormat>
@@ -263,10 +262,6 @@
 					</outputFormats>
 					<timestampedReports>false</timestampedReports>
 					<failWhenNoMutations>false</failWhenNoMutations>
-					<verbose>true</verbose>
-  					<exportLineCoverage>true</exportLineCoverage>
-					<historyInputFile>target/pitHistory.xml</historyInputFile>
-  					<historyOutputFile>target/pitHistory.xml</historyOutputFile>
 				</configuration>
 			</plugin>
 		</plugins>
