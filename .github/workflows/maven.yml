@@ -86,7 +86,7 @@ jobs:
             set -e
 
           else
-            echo "🚀 Running Maven build without SonarCloud analysis..."
+            echo "Running Maven build without SonarCloud analysis..."
             mvn -B verify package --file pom.xml
           fi
 
