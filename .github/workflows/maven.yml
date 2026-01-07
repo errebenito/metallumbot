@@ -6,10 +6,12 @@ on:
   pull_request:
     branches: [ "main" ]
 
-permissions: read-all
+permissions:
+    contents: read
 
 jobs:
   build:
+    name: Build with Maven
     runs-on: ubuntu-latest
 
     steps:
@@ -43,55 +45,39 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-
-      - name: Check for code changes
-        id: changes
-        run: |
-          git fetch origin $GITHUB_BASE_REF --depth=1 || true
-          CHANGED_FILES=$(git diff --name-only origin/$GITHUB_BASE_REF...HEAD || true)
-          echo "Changed files:"
-          echo "$CHANGED_FILES"
-
-          if echo "$CHANGED_FILES" | grep -E '\.java$|pom\.xml'; then
-            echo "code_changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "code_changes=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Build & Conditional Sonar Analysis
-        if: steps.changes.outputs.code_changes == 'true'
+      - name: Build and run tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           METALLUM_BOT_TOKEN: ${{ secrets.METALLUM_BOT_TOKEN }}
         run: |
-          if [ -n "$SONAR_TOKEN" ] && { [ "$GITHUB_REF" = "refs/heads/main" ] || [ "${{ github.event.pull_request.head.repo.full_name }}" = "${{ github.repository }}" ]; }; then
-            echo "Running Maven build with authenticated SonarCloud analysis..."
-            mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-              -Dsonar.projectKey=errebenito_metallumbot \
-              --file pom.xml
+          echo "Running Maven build and tests..."
+          mvn -B verify
+  sonar:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-          elif [ "${{ github.actor }}" = "dependabot[bot]" ] || [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
-            echo "Running Maven build with anonymous SonarCloud analysis (Dependabot or fork PR)..."
-            set +e
-            mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-              -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.organization=errebenito \
-              -Dsonar.projectKey=errebenito_metallumbot \
-              --file pom.xml
-            if [ $? -ne 0 ]; then
-              echo "Anonymous Sonar analysis failed — continuing without failing build."
-              mvn -B verify package --file pom.xml
-            fi
-            set -e
+      - name: Set up JDK
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
+        with:
+          java-version: '24'
+          distribution: 'temurin'
+          cache: maven
 
-          else
-            echo "Running Maven build without SonarCloud analysis..."
-            mvn -B verify package --file pom.xml
+      - name: Run SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "SONAR_TOKEN not set — skipping SonarCloud"
+            exit 0
           fi
 
-      - name: Fast build only (no code changes)
-        if: steps.changes.outputs.code_changes == 'false'
-        run: |
-          echo "No Java or Maven configuration changes detected — skipping Sonar and tests."
-          mvn -B install -DskipTests --file pom.xml
+          echo "Running authenticated SonarCloud analysis..."
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.organization=errebenito \
+          -Dsonar.projectKey=errebenito_metallumbot
