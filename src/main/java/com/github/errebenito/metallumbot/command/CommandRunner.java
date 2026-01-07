@@ -22,7 +22,7 @@ public class CommandRunner {
   
   private static final String ERROR_MESSAGE = "Error retrieving data. Returning default value:\n\n";
 
-  private static final String DEFAULT_BAND = "https://www.metal-archives.com/bands/Black_Sabbath/99";
+  private static final String DEFAULT_BAND = "https://www.metal-archives.com/band/view/id/99";
   
   private static final String DEFAULT_ALBUM = "https://www.metal-archives.com/albums/Black_Sabbath/Black_Sabbath/482";
   
@@ -50,7 +50,7 @@ public class CommandRunner {
     } catch (IOException _) {
       LOGGER.error(ERROR_MESSAGE);
     }
-    return result;
+    return result == null ? DEFAULT_BAND : result;
   }
   
   /**
