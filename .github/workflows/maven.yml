@@ -57,25 +57,25 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main'
-      steps:
-        - name: Checkout
-          uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-        - name: Set up JDK
-          uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
-          with:
-            java-version: '24'
-            distribution: 'temurin'
-            cache: maven
+      - name: Set up JDK
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
+        with:
+          java-version: '24'
+          distribution: 'temurin'
+          cache: maven
 
-        - name: Run SonarCloud analysis
-          env:
-            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          run: |
-            if [ -z "$SONAR_TOKEN" ]; then
-              echo "SONAR_TOKEN not set — skipping SonarCloud"
-              exit 0
-            fi
+      - name: Run SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "SONAR_TOKEN not set — skipping SonarCloud"
+            exit 0
+          fi
 
           echo "Running authenticated SonarCloud analysis..."
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
