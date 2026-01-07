@@ -2,9 +2,12 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+      - '**'
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 permissions:
     contents: read
@@ -81,5 +84,6 @@ jobs:
 
           echo "Running authenticated SonarCloud analysis..."
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.login=$SONAR_TOKEN \
           -Dsonar.organization=errebenito \
           -Dsonar.projectKey=errebenito_metallumbot
