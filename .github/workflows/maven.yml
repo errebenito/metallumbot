@@ -83,7 +83,7 @@ jobs:
             exit 0
           fi
           echo "Running authenticated SonarCloud analysis..."
-         mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-         -Dsonar.organization=errebenito \
-         -Dsonar.projectKey=errebenito_metallumbot \
-         -Dsonar.scanner.skipJreProvisioning=true
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.organization=errebenito \
+          -Dsonar.projectKey=errebenito_metallumbot \
+          -Dsonar.scanner.skipJreProvisioning=true
