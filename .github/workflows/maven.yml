@@ -4,10 +4,8 @@ on:
   push:
     branches:
       - main
-      - '**'
   pull_request:
-    branches:
-      - main
+    types: [opened, synchronize, reopened]
 
 permissions:
     contents: read
@@ -49,10 +47,11 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build and run tests
+      - name: Build and analyze
         env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           METALLUM_BOT_TOKEN: ${{ secrets.METALLUM_BOT_TOKEN }}
         run: |
           echo "Running Maven build and tests..."
-          mvn -B verify
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=errebenito_metallumbot
