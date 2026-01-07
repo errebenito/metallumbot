@@ -76,11 +76,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           METALLUM_BOT_TOKEN: ${{ secrets.METALLUM_BOT_TOKEN }}
         run: |
-          if [ -z "$SONAR_TOKEN" ]; then
+          if [ -z "${{ secrets.SONAR_TOKEN }}" ]; then
             echo "SONAR_TOKEN not set — skipping SonarCloud"
             exit 0
           fi
-
           echo "Running authenticated SonarCloud analysis..."
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
