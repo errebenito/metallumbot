@@ -1,34 +1,42 @@
 package com.github.errebenito.metallumbot.connector;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for the UrlConnector class. 
+ * Unit tests for the UrlConnector class.
 
  * @author rbenito
  *
  */
-class UrlConnectorTest { 
+class UrlConnectorTest {
 
   private static UrlConnector connector;
-  
+
   @Test
   void whenRandomBandUrlShouldReturnCorrectUrl() throws IOException {
     connector = new UrlConnector().withUrl(UrlType.RANDOM_BAND.getUrl());
-    assertEquals(UrlType.RANDOM_BAND.getUrl(), 
+    assertEquals(UrlType.RANDOM_BAND.getUrl(),
         connector.connect().getURL(), "URL did not match");
   }
- 
+
   @Test
   void whenUpcomingReleasesUrlShouldReturnCorrectUrl() throws IOException {
     connector = new UrlConnector().withUrl(UrlType.UPCOMING_RELEASES.getUrl());
-    assertEquals(UrlType.UPCOMING_RELEASES.getUrl(), 
+    assertEquals(UrlType.UPCOMING_RELEASES.getUrl(),
         connector.connect().getURL(), "URL did not match");
   }
-  
+
+  @Test
+  void whenConnectShouldSetInstanceFollowRedirectsToFalse() throws IOException {
+    connector = new UrlConnector().withUrl(UrlType.RANDOM_BAND.getUrl());
+    final boolean instanceFollowRedirects = connector.connect().getInstanceFollowRedirects();
+    assertFalse(instanceFollowRedirects, "Connection follows redirects");
+  }
+
   @Test
   void whenConnectShouldHaveTimeout() throws IOException {
     connector = new UrlConnector().withUrl(UrlType.RANDOM_BAND.getUrl());
@@ -49,11 +57,11 @@ class UrlConnectorTest {
     final String agent = connector.connect().getRequestProperty("User-Agent");
     assertEquals("Mozilla", agent, "User agent did not match the expected value");
   }
-  
+
   @Test
   void whenConnectShouldHaveUserRefererProperty() throws IOException {
     final String referer = connector.connect().getRequestProperty("Referer");
     assertEquals("google.com", referer, "Referer did not match the expected value");
   }
-  
+
 }
