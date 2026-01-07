@@ -83,6 +83,9 @@ jobs:
             exit 0
           fi
           echo "Running authenticated SonarCloud analysis..."
+          echo $SONAR_TOKEN
+          export SONAR_TOKEN="$SONAR_TOKEN"
+          echo $SONAR_TOKEN
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.organization=errebenito \
           -Dsonar.projectKey=errebenito_metallumbot \
