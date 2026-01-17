@@ -18,7 +18,7 @@ A simple Telegram bot written in Java to retrieve information from [Metal Archiv
 - Retrieve the link to a random upcoming release's page.
 
 ## Configuration
-The bot requires the following two environment variables to exist:
+The bot requires the following environment variable to exist at runtime to successfully register the bot:
 
 - METALLUM_BOT_TOKEN: Your telegram bot token.
 
