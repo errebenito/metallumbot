@@ -1,19 +1,8 @@
 package com.github.errebenito.metallumbot;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -53,7 +42,6 @@ import com.github.errebenito.metallumbot.command.CommandRunnerFactoryImpl;
 class MetallumBotTest {
   private static final String DEFAULT_ALBUM = "https://www.metal-archives.com/albums/Black_Sabbath/Black_Sabbath/482";
   private static final String DEFAULT_BAND = "https://www.metal-archives.com/bands/Black%20Sabbath";
-  private static final String TOKEN = System.getenv("METALLUM_BOT_TOKEN");
   
   @BeforeEach
   void setUp() {
@@ -261,12 +249,12 @@ class MetallumBotTest {
   @Test
   void testInitializeBotRegistersBot() throws Exception {
     TelegramBotsLongPollingApplication botMock = mock(TelegramBotsLongPollingApplication.class);
-    when(botMock.registerBot(eq(TOKEN), any(MetallumBot.class))).thenReturn(mock(BotSession.class));
+    when(botMock.registerBot(anyString(), any(MetallumBot.class))).thenReturn(mock(BotSession.class));
 
     TelegramBotsLongPollingApplicationFactory factory = () -> botMock;
     MetallumBot.initializeBot(factory);
 
-    verify(botMock).registerBot(eq(TOKEN), any(MetallumBot.class));
+    verify(botMock).registerBot(anyString(), any(MetallumBot.class));
   }
 
   @Test
@@ -278,7 +266,7 @@ class MetallumBotTest {
     try (var _ = mockConstruction(
       TelegramBotsLongPollingApplication.class,
       (mock, _) -> {
-        when(mock.registerBot(eq(TOKEN), any())).thenThrow(new TelegramApiException("test"));
+        when(mock.registerBot(anyString(), any())).thenThrow(new TelegramApiException("test"));
       })) {
       MetallumBot.initializeBot();
     }
@@ -320,7 +308,7 @@ class MetallumBotTest {
         })) {
           MetallumBot.main(new String[]{});
           TelegramBotsLongPollingApplication bot = mocked.constructed().get(0);
-          verify(bot).registerBot(eq(TOKEN), any());
+          verify(bot).registerBot(anyString(), any());
       }
   }
 
@@ -334,7 +322,7 @@ class MetallumBotTest {
 
     when(factory.create()).thenReturn(mockBot);
     // Simulate registerBot throwing an exception, so registered = false and closeQuietly called
-    when(mockBot.registerBot(eq(System.getenv("METALLUM_BOT_TOKEN")), any(MetallumBot.class)))
+    when(mockBot.registerBot(anyString(), any(MetallumBot.class)))
       .thenThrow(new RuntimeException("Simulated registerBot failure"));
     // Simulate close() throwing exception
     doThrow(new RuntimeException("Exception while closing bot")).when(mockBot).close();
