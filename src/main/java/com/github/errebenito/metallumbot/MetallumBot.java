@@ -37,8 +37,6 @@ public class MetallumBot implements LongPollingSingleThreadUpdateConsumer {
       /band Returns a random band
       /upcoming Returns a random upcoming release""";
 
-  private static final String TOKEN = System.getenv("METALLUM_BOT_TOKEN");
-
   private final CommandRunnerFactory factory;
   
   private final TelegramClient client;
@@ -55,8 +53,13 @@ public class MetallumBot implements LongPollingSingleThreadUpdateConsumer {
    * Constructor.
    */
   public MetallumBot(CommandRunnerFactory factory) {
-    this(factory, new OkHttpTelegramClient(TOKEN));
+    this(factory, new OkHttpTelegramClient(getToken()));
   }
+
+  static String getToken() {
+    return System.getenv("METALLUM_BOT_TOKEN");
+  }
+
   /**
    * Method for receiving messages.
 
@@ -121,7 +124,7 @@ public class MetallumBot implements LongPollingSingleThreadUpdateConsumer {
     boolean registered = false;
     try {
       bot = factory.create();
-      bot.registerBot(TOKEN, new MetallumBot(new CommandRunnerFactoryImpl()));
+      bot.registerBot(getToken(), new MetallumBot(new CommandRunnerFactoryImpl()));
       registered = true;
     } catch (TelegramApiException e) {
       LOGGER.error("Error setting up and registering bot", e);
