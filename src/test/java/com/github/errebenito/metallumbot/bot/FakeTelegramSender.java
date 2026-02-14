@@ -1,7 +1,5 @@
 package com.github.errebenito.metallumbot.bot;
 
-import org.checkerframework.checker.units.qual.s;
-
 public class FakeTelegramSender implements TelegramSender {
     String lastChatId;
     String lastText;

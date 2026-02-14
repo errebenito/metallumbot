@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.junit.jupiter.api.Test;
