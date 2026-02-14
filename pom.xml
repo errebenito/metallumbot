@@ -18,16 +18,9 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>com.fasterxml.jackson</groupId>
-				<artifactId>jackson-bom</artifactId>
-				<version>2.21.0</version>
-				<scope>import</scope>
-				<type>pom</type>
-			</dependency>
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-bom</artifactId>
-				<version>5.21.0</version>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-bom</artifactId>
+				<version>2.25.3</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
@@ -39,11 +32,11 @@
 				<scope>import</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-bom</artifactId>
-				<version>2.25.3</version>
-				<scope>import</scope>
-				<type>pom</type>
+				<groupId>org.mockito</groupId>
+    			<artifactId>mockito-bom</artifactId>
+    			<version>5.21.0</version>
+    			<type>pom</type>
+    			<scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -71,34 +64,20 @@
 			<artifactId>log4j-slf4j2-impl</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>jakarta.validation</groupId>
-			<artifactId>jakarta.validation-api</artifactId>
-			<version>3.1.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.spotbugs</groupId>
-			<artifactId>spotbugs-annotations</artifactId>
-			<version>4.9.8</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-params</artifactId>
+			<artifactId>junit-jupiter-api</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<scope>test</scope>
+			<groupId>com.squareup.okhttp3</groupId>
+  		  	<artifactId>mockwebserver</artifactId>
+  			<version>4.12.0</version>
+  			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -109,22 +88,6 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-junit-jupiter</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.github.hakky54</groupId>
-			<artifactId>logcaptor</artifactId>
-			<version>2.12.2</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-to-slf4j</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>ch.qos.logback</groupId>
-					<artifactId>logback-classic</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
 	<build>
@@ -147,12 +110,11 @@
 				<configuration>
 					<argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
 					<includes>
-						<include>com.github.errebenito.metallumbot.MetallumBotTest.java</include>
-						<include>com.github.errebenito.metallumbot.command.CommandRunnerTest.java</include>
-					  	<include>com.github.errebenito.metallumbot.command.CommandRunnerFactoryTest.java</include>
-						<include>com.github.errebenito.metallumbot.connector.UrlConnectorTest.java</include>
-						<include>com.github.errebenito.metallumbot.utils.MessageUtilsTest.java</include>
-						<include>com.github.errebenito.metallumbot.model.UpcomingAlbumsTest.java</include>
+						<include>com.github.errebenito.metallumbot.ApplicationTest</include>
+						<include>com.github.errebenito.metallumbot.bot.CommandProcessorTest</include>
+						<include>com.github.errebenito.metallumbot.bot.MetallumBotTest</include>
+						<include>com.github.errebenito.metallumbot.randomband.MetalArchivesRandomBandProviderTest</include>
+						<include>com.github.errebenito.metallumbot.randomband.RandomBandUseCaseTest</include>
 					</includes>
 				</configuration>
 			</plugin>
@@ -189,7 +151,7 @@
 							</filters>
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.github.errebenito.metallumbot.MetallumBot</mainClass>
+									<mainClass>com.github.errebenito.metallumbot.Main</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>
@@ -200,6 +162,11 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.14</version>
+				<configuration>
+					<excludes>
+						<exclude>**/Main.class</exclude>
+					</excludes>
+				</configuration>
 				<executions>
 					<execution>
 						<id>prepare-agent</id>
@@ -244,24 +211,24 @@
 							</dependency>
 						</dependencies>
 						<configuration>
+							<excludedClasses>
+        						<param>com.github.errebenito.metallumbot.Main</param>
+    						</excludedClasses>
 							<targetClasses>
-								<param>com.github.errebenito.metallumbot.MetallumBot</param>
-								<param>com.github.errebenito.metallumbot.TelegramBotsLongPollingApplicationFactory</param>
-								<param>com.github.errebenito.metallumbot.TelegramBotsLongPollingApplicationFactoryImpl</param>
-								<param>com.github.errebenito.metallumbot.command.CommandRunner</param>
-								<param>com.github.errebenito.metallumbot.command.CommandRunnerFactory</param>
-								<param>com.github.errebenito.metallumbot.command.CommandRunnerFactoryImpl</param>
-								<param>com.github.errebenito.metallumbot.connector.UrlConnector</param>
-								<param>com.github.errebenito.metallumbot.command.UrlType</param>
-								<param>com.github.errebenito.metallumbot.model.UpcomingAlbums</param>
-								<param>com.github.errebenito.metallumbot.utils.MessageUtils</param>
+								<param>com.github.errebenito.metallumbot.Application</param>
+								<param>com.github.errebenito.metallumbot.bot.CommandProcessor</param>
+								<param>com.github.errebenito.metallumbot.bot.MetallumBot</param>
+								<param>com.github.errebenito.metallumbot.bot.MetallumBotMessageSender</param>
+								<param>com.github.errebenito.metallumbot.model.Command</param>
+								<param>com.github.errebenito.metallumbot.randomband.MetalArchivesRandomBandProvider</param>								
+								<param>com.github.errebenito.metallumbot.randomband.RandomBandUseCase</param>																
 							</targetClasses>
 							<targetTests>
-								<param>com.github.errebenito.metallumbot.MetallumBotTest*</param>
-								<param>com.github.errebenito.metallumbot.command.CommandRunnerTest*</param>
-								<param>com.github.errebenito.metallumbot.command.CommandRunnerFactoryTest*</param>
-								<param>com.github.errebenito.metallumbot.connector.UrlConnectorTest*</param>
-								<param>com.github.errebenito.metallumbot.utils.MessageUtilsTest*</param>
+								<param>com.github.errebenito.metallumbot.ApplicationTest</param>								
+								<param>com.github.errebenito.metallumbot.bot.CommandProcessorTest</param>
+								<param>com.github.errebenito.metallumbot.bot.MetallumBotTest</param>
+								<param>com.github.errebenito.metallumbot.randomband.MetalArchivesRandomBandProviderTest</param>
+								<param>com.github.errebenito.metallumbot.randomband.RandomBandUseCaseTest</param>
 							</targetTests>
 							<outputFormats>
 								<outputFormat>xml</outputFormat>
