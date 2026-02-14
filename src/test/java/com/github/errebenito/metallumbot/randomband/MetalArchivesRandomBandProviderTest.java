@@ -87,4 +87,10 @@ class MetalArchivesRandomBandProviderTest {
         assertThrows(IllegalStateException.class,
             provider::getRandomBandUrl);
     }
+
+    @Test
+    void shouldInstantiateNoArgConstructor() {
+        MetalArchivesRandomBandProvider provider = new MetalArchivesRandomBandProvider();
+        assertNotNull(provider);
+    }
 }
