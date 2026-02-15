@@ -3,6 +3,8 @@ package com.github.errebenito.metallumbot.randomband;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.github.errebenito.metallumbot.CommandHandler;
+
 public class RandomBandUseCase implements CommandHandler {
     private static final Logger LOGGER = LogManager.getLogger(RandomBandUseCase.class);
     private final RandomBandProvider bandProvider;

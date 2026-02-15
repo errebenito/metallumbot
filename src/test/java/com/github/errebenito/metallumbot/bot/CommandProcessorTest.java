@@ -1,7 +1,6 @@
 package com.github.errebenito.metallumbot.bot;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,20 +8,24 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.junit.jupiter.api.Test;
 
+import com.github.errebenito.metallumbot.CommandHandler;
 import com.github.errebenito.metallumbot.model.Command;
-import com.github.errebenito.metallumbot.randomband.CommandHandler;
 
 class CommandProcessorTest {
     @Test
     void shouldSendBandUrlForBandCommand() {
 
-        CommandHandler fakeUseCase =
+        CommandHandler fakeBandUseCase =
             () -> "https://www.metal-archives.com/bands/Test/123";
+
+        CommandHandler fakeAlbumUseCase = 
+            () -> "https://www.metal-archives.com/albums/Test/123";    
 
         FakeTelegramSender fakeSender = new FakeTelegramSender();
 
         CommandProcessor processor =
-            new CommandProcessor(fakeUseCase, fakeSender);
+            new CommandProcessor(fakeBandUseCase, fakeAlbumUseCase, fakeSender);
+            
 
         processor.process(new Command("42", "/band"));
 
@@ -34,30 +37,57 @@ class CommandProcessorTest {
     }
 
     @Test
+    void shouldSendAlbumInfoForUpcomingCommand() {
+
+        CommandHandler fakeBandUseCase =
+            () -> "https://www.metal-archives.com/bands/Test/123";
+
+        CommandHandler fakeAlbumUseCase = 
+            () -> "https://www.metal-archives.com/albums/Test/123";    
+
+        FakeTelegramSender fakeSender = new FakeTelegramSender();
+
+        CommandProcessor processor =
+            new CommandProcessor(fakeBandUseCase, fakeAlbumUseCase, fakeSender);
+            
+
+        processor.process(new Command("42", "/upcoming"));
+
+        assertEquals("42", fakeSender.lastChatId);
+        assertEquals(
+            "https://www.metal-archives.com/albums/Test/123",
+            fakeSender.lastText
+        );
+    }
+
+    @Test
     void shouldIgnoreOtherCommands() {
 
         CommandHandler fakeUseCase = () -> "ignored";
         FakeTelegramSender fakeSender = new FakeTelegramSender();
 
         CommandProcessor processor =
-            new CommandProcessor(fakeUseCase, fakeSender);
+            new CommandProcessor(fakeUseCase, fakeUseCase, fakeSender);
 
         processor.process(new Command("42", "/start"));
 
-        assertNull(fakeSender.lastText);
+        assertTrue(fakeSender.lastText.contains("Usage"));
     }
 
     @Test
     void shouldLogWhenSendMessageThrows() {
 
-        CommandHandler fakeUseCase =
+        CommandHandler fakeBandUseCase =
             () -> "https://www.metal-archives.com/bands/Test/123";
+
+        CommandHandler fakeAlbumUseCase = 
+            () -> "https://www.metal-archives.com/albums/Test/123";
 
         FakeTelegramSender fakeSender = new FakeTelegramSender(true);
 
 
         CommandProcessor processor =
-            new CommandProcessor(fakeUseCase, fakeSender);
+            new CommandProcessor(fakeBandUseCase, fakeAlbumUseCase, fakeSender);
 
         Logger logger = LogManager.getLogger(CommandProcessor.class);
         LoggerContext context = (LoggerContext) LogManager.getContext(false);
