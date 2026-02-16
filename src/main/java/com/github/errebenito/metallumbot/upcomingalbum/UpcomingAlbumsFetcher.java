@@ -6,12 +6,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
-public class JsoupHtmlFetcher implements HtmlFetcher {
+public class UpcomingAlbumsFetcher implements MetalArchivesDataFetcher {
     @Override
-    public Document fetch(String url) throws Exception {
+    public String fetch(String url) throws Exception {
 
         HttpClient client = HttpClient.newBuilder()
         .followRedirects(HttpClient.Redirect.NORMAL)
@@ -33,7 +30,7 @@ public class JsoupHtmlFetcher implements HtmlFetcher {
         HttpResponse<String> response =
             client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        return Jsoup.parse(response.body());
+        return response.body();
     }
 }
 

@@ -14,7 +14,6 @@ import org.jsoup.Jsoup;
 public class UpcomingAlbumHelper {
 
     public static final String FULL_UPCOMING_ALBUMS_URL = "https://www.metal-archives.com/release/ajax-upcoming/json/1";
-    public static final String PARTIAL_UPCOMING_ALBUMS_URL = "https://www.metal-archives.com/release/upcoming";
 
     private static final Logger LOGGER = LogManager.getLogger(UpcomingAlbumHelper.class);
 

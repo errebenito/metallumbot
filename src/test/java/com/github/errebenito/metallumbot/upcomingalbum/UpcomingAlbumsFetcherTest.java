@@ -2,7 +2,6 @@ package com.github.errebenito.metallumbot.upcomingalbum;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
-class JsoupHtmlFetcherTest {
+class UpcomingAlbumsFetcherTest {
 
     private MockWebServer server;
 
@@ -36,11 +35,11 @@ class JsoupHtmlFetcherTest {
 
         String url = server.url("/test").toString();
 
-        JsoupHtmlFetcher fetcher = new JsoupHtmlFetcher();
+        UpcomingAlbumsFetcher fetcher = new UpcomingAlbumsFetcher();
 
-        Document doc = fetcher.fetch(url);
+        String doc = fetcher.fetch(url);
 
-        assertEquals("Hello", doc.selectFirst("h1").text());
+        assertTrue(doc.contains("Hello"));
     }
 }
 

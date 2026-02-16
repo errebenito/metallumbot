@@ -8,19 +8,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.errebenito.metallumbot.helper.UpcomingAlbumHelper;
 import com.github.errebenito.metallumbot.model.Album;
 
-public class CurlUpcomingAlbumProvider implements RandomUpcomingAlbumProvider {
-    private final String jsonUrl;
-    private final Executor curlExecutor;
-
-    public CurlUpcomingAlbumProvider(String jsonUrl, Executor curlExecutor) {
-        this.jsonUrl = jsonUrl;
-        this.curlExecutor = curlExecutor;
+public class MetalArchivesUpcomingAlbumProvider implements RandomUpcomingAlbumProvider {
+    private final String htmlUrl;
+    MetalArchivesDataFetcher fetcher;
+    
+    public MetalArchivesUpcomingAlbumProvider(String htmlUrl, MetalArchivesDataFetcher fetcher) {
+        this.htmlUrl = htmlUrl;
+        this.fetcher = fetcher;
     }
 
     @Override
     public Album getRandomUpcomingAlbum() throws Exception {
-        String json = curlExecutor.execute(jsonUrl);
-        JsonNode data = parseJSON(json);
+        String doc = fetcher.fetch(htmlUrl);
+        JsonNode data = parseJSON(doc);
         return getRandomUpcomingAlbum(data);
     }
 
@@ -29,10 +29,10 @@ public class CurlUpcomingAlbumProvider implements RandomUpcomingAlbumProvider {
 
         String bandHtml = entry.get(0).asText();
         String albumHtml = entry.get(1).asText();
-        String type = entry.get(2).asText(); 
-        String genre = entry.get(3).asText(); 
+        String type = entry.get(2).asText();
+        String genre = entry.get(3).asText();
         
-        return new Album( 
+        return new Album(
             UpcomingAlbumHelper.extractHref(bandHtml),
             UpcomingAlbumHelper.extractText(bandHtml),
             UpcomingAlbumHelper.extractHref(albumHtml),
