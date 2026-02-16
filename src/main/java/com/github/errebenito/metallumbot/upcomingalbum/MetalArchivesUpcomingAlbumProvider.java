@@ -9,17 +9,17 @@ import com.github.errebenito.metallumbot.helper.UpcomingAlbumHelper;
 import com.github.errebenito.metallumbot.model.Album;
 
 public class MetalArchivesUpcomingAlbumProvider implements RandomUpcomingAlbumProvider {
-    private final String htmlUrl;
+    private final String jsonUrl;
     MetalArchivesDataFetcher fetcher;
     
-    public MetalArchivesUpcomingAlbumProvider(String htmlUrl, MetalArchivesDataFetcher fetcher) {
-        this.htmlUrl = htmlUrl;
+    public MetalArchivesUpcomingAlbumProvider(String jsonUrl, MetalArchivesDataFetcher fetcher) {
+        this.jsonUrl = jsonUrl;
         this.fetcher = fetcher;
     }
 
     @Override
     public Album getRandomUpcomingAlbum() throws Exception {
-        String doc = fetcher.fetch(htmlUrl);
+        String doc = fetcher.fetch(jsonUrl);
         JsonNode data = parseJSON(doc);
         return getRandomUpcomingAlbum(data);
     }
