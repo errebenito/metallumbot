@@ -4,12 +4,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jsoup.Jsoup;
 
 public class UpcomingAlbumHelper {
 
@@ -21,13 +18,31 @@ public class UpcomingAlbumHelper {
         // intentionally empty
     }
 
-    public static String extractHref(String html) {
-        Matcher m = Pattern.compile("href=\"([^\"]+)\"").matcher(html);
-        return m.find() ? m.group(1) : "";
+    public static String extractHref(String anchorHtml) {
+        int hrefStart = anchorHtml.indexOf("href=\"");
+        if (hrefStart == -1) {
+            throw new IllegalArgumentException("No href found");
+        }
+
+        int start = hrefStart + 6;
+        int end = anchorHtml.indexOf('"', start);
+
+        if (end == -1) {
+            throw new IllegalArgumentException("Malformed href");
+        }
+
+        return anchorHtml.substring(start, end);
     }
 
-    public static String extractText(String html) {
-        return Jsoup.parse(html).text();
+    public static String extractText(String anchorHtml) {
+        int start = anchorHtml.indexOf('>');
+        int end = anchorHtml.lastIndexOf('<');
+
+        if (start == -1 || end == -1 || end <= start) {
+            throw new IllegalArgumentException("Malformed anchor");
+        }
+
+        return anchorHtml.substring(start + 1, end);
     }
 
     public static LocalDate parseDate(String value) {
