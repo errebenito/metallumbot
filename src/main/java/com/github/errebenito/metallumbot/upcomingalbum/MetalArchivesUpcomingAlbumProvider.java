@@ -12,14 +12,20 @@ import com.github.errebenito.metallumbot.helper.UpcomingAlbumHelper;
 import com.github.errebenito.metallumbot.model.Album;
 
 public class MetalArchivesUpcomingAlbumProvider implements RandomUpcomingAlbumProvider {
+    private record CacheEntry(JsonNode data, Instant expiresAt) {
+
+        boolean isExpired(Clock clock) {
+            return Instant.now(clock).isAfter(expiresAt);
+        }
+    }
+
     private final String jsonUrl;
     MetalArchivesDataFetcher fetcher;
 
     private final Duration ttl;
     private final Clock clock;
 
-    private JsonNode cachedData;
-    private Instant expiresAt;
+    private CacheEntry cache;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -37,17 +43,18 @@ public class MetalArchivesUpcomingAlbumProvider implements RandomUpcomingAlbumPr
 
     @Override
     public synchronized Album getRandomUpcomingAlbum() throws Exception {
-        if (cachedData == null || Instant.now(clock).isAfter(expiresAt)) {
-            refresh();
+        if (cache == null || cache.isExpired(clock)) {
+            cache = refresh();
         }
 
-        return getRandomUpcomingAlbum(cachedData);
+        return getRandomUpcomingAlbum(cache.data());
     }
 
-    private void refresh() throws Exception {
+    private CacheEntry refresh() throws Exception {
         String doc = fetcher.fetch(jsonUrl);
-        cachedData = parseJSON(doc);
-        expiresAt = Instant.now(clock).plus(ttl);
+        JsonNode data = parseJSON(doc);
+        Instant expiresAt = Instant.now(clock).plus(ttl);
+        return new CacheEntry(data, expiresAt);
     }
 
     private Album getRandomUpcomingAlbum(JsonNode data) {
