@@ -2,6 +2,7 @@ package com.github.errebenito.metallumbot.bot;
 
 import static org.mockito.Mockito.*;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
@@ -9,9 +10,10 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import com.github.errebenito.metallumbot.model.Command;
 
 class MetallumBotTest {
-    @Test
-    void shouldDelegateToProcessorWhenTextMessageReceived() {
 
+    @Test
+    @DisplayName("Verifies that the bot delegates command processing")
+    void givenBotReceivesUpdateWithMessageWhenHandlingItThenShouldDelegateToCommandProcessor() {
         CommandProcessor processor = mock(CommandProcessor.class);
         MetallumBot bot = new MetallumBot(processor);
 
@@ -30,8 +32,8 @@ class MetallumBotTest {
     }
 
     @Test
-    void shouldNotCallProcessorWhenNoMessage() {
-
+    @DisplayName("Verifies that the bot does not delegate if the update is not a message")
+    void givenBotReceivesUpdateWithoutMessageWhenHandlingItThenShouldNotDelegateToCommandProcessor() {
         CommandProcessor processor = mock(CommandProcessor.class);
         MetallumBot bot = new MetallumBot(processor);
 
@@ -44,8 +46,8 @@ class MetallumBotTest {
     }
 
     @Test
-    void shouldNotCallProcessorWhenMessageHasNoText() {
-
+    @DisplayName("Verifies that the bot does not delegate if the update is a message without text")
+    void givenBotReceivesUpdateWithoutMessageTextWhenHandlingItThenShouldNotDelegateToCommandProcessor() {
         CommandProcessor processor = mock(CommandProcessor.class);
         MetallumBot bot = new MetallumBot(processor);
 

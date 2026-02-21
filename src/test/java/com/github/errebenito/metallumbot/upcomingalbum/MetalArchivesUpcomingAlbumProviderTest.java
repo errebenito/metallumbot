@@ -9,6 +9,7 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.github.errebenito.metallumbot.model.Album;
@@ -16,24 +17,24 @@ import com.github.errebenito.metallumbot.model.Album;
 class MetalArchivesUpcomingAlbumProviderTest {
 
     @Test
-    void shouldParseAlbumFromHtml() throws Exception {
-
-        String html = """
-            {
-      "aaData": [
-        [
-          "<a href=\\"https://band\\">Test Band</a>",
-          "<a href=\\"https://album\\">Test Album</a>",
-          "Full-length",
-          "Black Metal",
-          "January 1st, 2026"
+    @DisplayName("Verifies that the upcoming albums JSON data is correctly parsed")
+    void givenUpcomingAlbumsJsonWhenGettingRandomAlbumThenShouldParseJSon() throws Exception {
+        String json = """
+        {
+        "aaData": [
+            [
+            "<a href=\\"https://band\\">Test Band</a>",
+            "<a href=\\"https://album\\">Test Album</a>",
+            "Full-length",
+            "Black Metal",
+            "January 1st, 2026"
+            ]
         ]
-      ]
-    }
+        }
         """;
 
         MetalArchivesDataFetcher fakeFetcher =
-            url -> html;
+            url -> json;
 
         MetalArchivesUpcomingAlbumProvider provider =
             new MetalArchivesUpcomingAlbumProvider("ignored", fakeFetcher, 
@@ -46,15 +47,15 @@ class MetalArchivesUpcomingAlbumProviderTest {
     }
 
     @Test
-    void shouldThrowWhenNoRowsFound() {
-
-        String html = """
+    @DisplayName("Verifies that an exception is thrown if the JSON data contains no albums")
+    void givenUpcomingAlbumsJsonWithoutAlbumDataWhenGettingRandomAlbumThenShouldTrow() {
+        String json = """
         {
         "aaData": []
         }
         """;
 
-        MetalArchivesDataFetcher fakeFetcher = url -> html;
+        MetalArchivesDataFetcher fakeFetcher = url -> json;
 
         MetalArchivesUpcomingAlbumProvider provider =
             new MetalArchivesUpcomingAlbumProvider("ignored", fakeFetcher, 
@@ -69,8 +70,8 @@ class MetalArchivesUpcomingAlbumProviderTest {
     }
 
     @Test
-    void shouldReuseCacheBeforeTtlExpires() throws Exception {
-    
+    @DisplayName("Verifies that the cache is used for calls made before it must be refreshed")
+    void givenMultipleUpcomingAlbumRequestsWhenGettingAlbumThenShouldUseCache() throws Exception {
         String json = """
         {
         "aaData": [
@@ -109,8 +110,8 @@ class MetalArchivesUpcomingAlbumProviderTest {
     }
 
     @Test
-    void shouldRefreshAfterTtlExpires() throws Exception {
-
+    @DisplayName("Verifies that the cache is refreshed for calls made after it expires")
+    void givenMultipleUpcomingAlbumRequestsWhenGettingAlbumFromExpiredCacheThenShouldRefreshCache() throws Exception {
         String json = """
         {
         "aaData": [

@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.github.errebenito.metallumbot.CommandHandler;
@@ -13,13 +14,13 @@ import com.github.errebenito.metallumbot.model.Command;
 
 class CommandProcessorTest {
     @Test
-    void shouldSendBandUrlForBandCommand() {
-
+    @DisplayName("Verifies that the command to get a random band works")
+    void givenBandCommandWhenProcessingCommandThenShouldInvokeBandUseCaseAndReturnBandLink() {
         CommandHandler fakeBandUseCase =
             () -> "https://www.metal-archives.com/bands/Test/123";
 
         CommandHandler fakeAlbumUseCase = 
-            () -> "https://www.metal-archives.com/albums/Test/123";    
+            () -> "https://www.metal-archives.com/albums/Test/123";
 
         FakeTelegramSender fakeSender = new FakeTelegramSender();
 
@@ -37,8 +38,8 @@ class CommandProcessorTest {
     }
 
     @Test
-    void shouldSendAlbumInfoForUpcomingCommand() {
-
+    @DisplayName("Verifies that the command to get a random album works")
+    void givenUpcomingAlbumCommandWhenProcessingCommandThenShouldInvokeUpcomingAlbumUseCaseAndReturnAlbumLink() {
         CommandHandler fakeBandUseCase =
             () -> "https://www.metal-archives.com/bands/Test/123";
 
@@ -61,8 +62,8 @@ class CommandProcessorTest {
     }
 
     @Test
-    void shouldIgnoreOtherCommands() {
-
+    @DisplayName("Verifies that any other command returns the usage instructions")
+    void givenOtherCommandWhenProcessingCommandThenShouldShowUsageInstructions() {
         CommandHandler fakeUseCase = () -> "ignored";
         FakeTelegramSender fakeSender = new FakeTelegramSender();
 
@@ -75,8 +76,8 @@ class CommandProcessorTest {
     }
 
     @Test
-    void shouldLogWhenSendMessageThrows() {
-
+    @DisplayName("Verifies that a message is logged if sending the response to a command fails")
+    void givenSendingResponseToCommandFailsWhenProcessingCommandThenShouldLogMessage() {
         CommandHandler fakeBandUseCase =
             () -> "https://www.metal-archives.com/bands/Test/123";
 

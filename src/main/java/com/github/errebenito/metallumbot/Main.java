@@ -26,7 +26,7 @@ public class Main {
         var albumProvider = new MetalArchivesUpcomingAlbumProvider(
             UpcomingAlbumHelper.FULL_UPCOMING_ALBUMS_URL,
             new UpcomingAlbumsFetcher(),
-            Duration.of(1, ChronoUnit.SECONDS),
+            Duration.of(12, ChronoUnit.HOURS),
         Clock.systemUTC());
         var bandHandler = new RandomBandUseCase(bandProvider);
         var albumHandler = new RandomUpcomingAlbumUseCase(albumProvider);

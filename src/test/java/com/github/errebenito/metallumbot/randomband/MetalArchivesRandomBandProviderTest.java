@@ -6,6 +6,7 @@ import java.net.http.HttpClient;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import okhttp3.mockwebserver.MockResponse;
@@ -27,8 +28,8 @@ class MetalArchivesRandomBandProviderTest {
     }
 
     @Test
-    void shouldReturnLocationHeaderWhenStatusIs302() throws Exception {
-
+    @DisplayName("Verifies that the band link is retrieved from the location header")
+    void givenRandomBandRequestWhenResponseHasStatus302AndLocationHeaderThenShouldReturnBandLink() throws Exception {
         server.enqueue(new MockResponse()
                 .setResponseCode(302)
                 .addHeader("Location",
@@ -52,7 +53,8 @@ class MetalArchivesRandomBandProviderTest {
     }
 
     @Test
-    void shouldThrowWhenStatusIsNot302() {
+    @DisplayName("Verifies that an exception is thrown when the response to a random band request does not have the expected status")
+    void givenRandomBandRequestWhenResponseHasUnexpectedStatusThenShouldThrow() {
         server.enqueue(new MockResponse()
             .setResponseCode(200));
 
@@ -70,8 +72,8 @@ class MetalArchivesRandomBandProviderTest {
     }
 
     @Test
-    void shouldThrowWhenLocationHeaderMissing() {
-
+    @DisplayName("Verifies that an exception is thrown when the response to a random band request does not have the expected header")
+    void givenRandomBandRequestWhenResponseHasMissingHeaderThenShouldThrow() {
         server.enqueue(new MockResponse()
             .setResponseCode(302));
 
@@ -89,7 +91,8 @@ class MetalArchivesRandomBandProviderTest {
     }
 
     @Test
-    void shouldInstantiateNoArgConstructor() {
+    @DisplayName("Verifies that the provider is built correctly")
+    void givenProviderWhenConstructingThenShouldReturnNotNull() {
         MetalArchivesRandomBandProvider provider = new MetalArchivesRandomBandProvider();
         assertNotNull(provider);
     }

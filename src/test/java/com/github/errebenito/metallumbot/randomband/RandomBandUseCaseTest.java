@@ -2,12 +2,14 @@ package com.github.errebenito.metallumbot.randomband;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class RandomBandUseCaseTest {
     @Test
-    void shouldReturnBandUrlWhenProviderSucceeds() {
-        RandomBandProvider fakeProvider = () -> 
+    @DisplayName("Verifies that a band URL is returned")
+    void givenBandProviderSuccessWhenHandlingBandUseCaseThenShouldReturnBandLink() {
+        RandomBandProvider fakeProvider = () ->
             "https://www.metal-archives.com/bands/Test/123";
 
         RandomBandUseCase useCase = new RandomBandUseCase(fakeProvider);
@@ -21,7 +23,8 @@ class RandomBandUseCaseTest {
     }
 
     @Test
-    void shouldReturnErrorMessageWhenProviderFails() {
+    @DisplayName("Verifies that an error message is returned if it was not possible to obtain a random band")
+    void givenBandProviderFailureWhenHandlingBandUseCaseThenShouldReturnErrorMessage() {
         RandomBandProvider failingProvider = () -> {
             throw new RuntimeException("Boom");
         };
