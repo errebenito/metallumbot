@@ -1,5 +1,8 @@
 package com.github.errebenito.metallumbot.upcomingalbum;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,17 +14,40 @@ import com.github.errebenito.metallumbot.model.Album;
 public class MetalArchivesUpcomingAlbumProvider implements RandomUpcomingAlbumProvider {
     private final String jsonUrl;
     MetalArchivesDataFetcher fetcher;
+
+    private final Duration ttl;
+    private final Clock clock;
+
+    private JsonNode cachedData;
+    private Instant expiresAt;
+
+    private final ObjectMapper mapper = new ObjectMapper();
+
     
-    public MetalArchivesUpcomingAlbumProvider(String jsonUrl, MetalArchivesDataFetcher fetcher) {
+    public MetalArchivesUpcomingAlbumProvider(
+        String jsonUrl,
+        MetalArchivesDataFetcher fetcher,
+        Duration ttl,
+        Clock clock) {
         this.jsonUrl = jsonUrl;
         this.fetcher = fetcher;
+        this.ttl = ttl;
+        this.clock = clock;
     }
 
     @Override
-    public Album getRandomUpcomingAlbum() throws Exception {
+    public synchronized Album getRandomUpcomingAlbum() throws Exception {
+        if (cachedData == null || Instant.now(clock).isAfter(expiresAt)) {
+            refresh();
+        }
+
+        return getRandomUpcomingAlbum(cachedData);
+    }
+
+    private void refresh() throws Exception {
         String doc = fetcher.fetch(jsonUrl);
-        JsonNode data = parseJSON(doc);
-        return getRandomUpcomingAlbum(data);
+        cachedData = parseJSON(doc);
+        expiresAt = Instant.now(clock).plus(ttl);
     }
 
     private Album getRandomUpcomingAlbum(JsonNode data) {
@@ -43,7 +69,7 @@ public class MetalArchivesUpcomingAlbumProvider implements RandomUpcomingAlbumPr
     }
 
     private JsonNode parseJSON(String json) throws JsonProcessingException {
-        JsonNode root = new ObjectMapper().readTree(json);
+        JsonNode root = mapper.readTree(json);
         JsonNode data = root.get("aaData");
         if (data == null || !data.isArray() || data.isEmpty()) {
             throw new IllegalStateException("No upcoming albums found");

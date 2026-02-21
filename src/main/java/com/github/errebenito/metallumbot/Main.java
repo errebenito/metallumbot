@@ -1,5 +1,9 @@
 package com.github.errebenito.metallumbot;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 
 import com.github.errebenito.metallumbot.bot.CommandProcessor;
@@ -19,7 +23,11 @@ public class Main {
         String botToken = System.getenv("METALLUM_BOT_TOKEN");
 
         var bandProvider = new MetalArchivesRandomBandProvider();
-        var albumProvider = new MetalArchivesUpcomingAlbumProvider(UpcomingAlbumHelper.FULL_UPCOMING_ALBUMS_URL, new UpcomingAlbumsFetcher());
+        var albumProvider = new MetalArchivesUpcomingAlbumProvider(
+            UpcomingAlbumHelper.FULL_UPCOMING_ALBUMS_URL,
+            new UpcomingAlbumsFetcher(),
+            Duration.of(1, ChronoUnit.SECONDS),
+        Clock.systemUTC());
         var bandHandler = new RandomBandUseCase(bandProvider);
         var albumHandler = new RandomUpcomingAlbumUseCase(albumProvider);
         var sender = new MetallumBotMessageSender(botToken);
