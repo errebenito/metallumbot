@@ -33,21 +33,6 @@ class MetalArchivesUpcomingAlbumProviderTest {
         return jsonWithBandAnchor("<a href=\"https://band\">Test Band</a>");
     }
 
-    private static class CountingFetcher implements UpcomingAlbumDataFetcher {
-        int calls = 0;
-        private final String json;
-
-        CountingFetcher(String json) {
-            this.json = json;
-        }
-
-        @Override
-        public String fetch() {
-            calls++;
-            return json;
-        }
-    }
-
     private static Clock fixedClock(String isoInstant) {
         return Clock.fixed(Instant.parse(isoInstant), ZoneOffset.UTC);
     }
