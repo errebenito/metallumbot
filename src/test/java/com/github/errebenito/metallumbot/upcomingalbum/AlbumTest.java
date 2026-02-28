@@ -2,11 +2,13 @@ package com.github.errebenito.metallumbot.upcomingalbum;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class AlbumTest {
     @Test
-    void shouldFormatAlbumCorrectly() {
+    @DisplayName("Verifies that the string representation of an album matches the expected format")
+    void givenAlbumWhenConvertingToStringRepresentationThenShouldEqualExpectedValue() {
 
         var album = new Album(
             "https://band.url",
