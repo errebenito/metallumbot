@@ -1,7 +1,7 @@
 package com.github.errebenito.metallumbot.upcomingalbum;
 
-import com.github.errebenito.metallumbot.model.Album;
+import java.io.IOException;
 
 public interface RandomUpcomingAlbumProvider {
-    Album getRandomUpcomingAlbum() throws Exception;
+    Album getRandomUpcomingAlbum() throws IOException, InterruptedException;
 }

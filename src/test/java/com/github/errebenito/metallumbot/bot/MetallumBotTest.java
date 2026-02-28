@@ -1,65 +1,93 @@
 package com.github.errebenito.metallumbot.bot;
 
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
-
-import com.github.errebenito.metallumbot.model.Command;
 
 class MetallumBotTest {
 
-    @Test
-    @DisplayName("Verifies that the bot delegates command processing")
-    void givenBotReceivesUpdateWithMessageWhenHandlingItThenShouldDelegateToCommandProcessor() {
-        CommandProcessor processor = mock(CommandProcessor.class);
-        MetallumBot bot = new MetallumBot(processor);
+    RecordingUnknownCommandUseCase unknown = new RecordingUnknownCommandUseCase();
+    RecordingRandomBandUseCase band = new RecordingRandomBandUseCase();
+    RecordingRandomUpcomingAlbumUseCase upcoming = new RecordingRandomUpcomingAlbumUseCase();
 
-        Update update = mock(Update.class);
-        Message message = mock(Message.class);
+    MetallumBot bot = new MetallumBot(unknown, band, upcoming);
 
-        when(update.hasMessage()).thenReturn(true);
-        when(update.getMessage()).thenReturn(message);
-        when(message.hasText()).thenReturn(true);
-        when(message.getChatId()).thenReturn(42L);
-        when(message.getText()).thenReturn("/band");
+    private Update updateWithCommand(String command) {
+        Chat chat = Chat.builder().id(42L).type("private").build();
+        Message message = Message.builder().chat(chat).text(command).build();
+        Update update = new Update();
 
-        bot.consume(update);
+        update.setMessage(message);
 
-        verify(processor).process(new Command("42", "/band"));
+        return update;
     }
 
     @Test
-    @DisplayName("Verifies that the bot does not delegate if the update is not a message")
-    void givenBotReceivesUpdateWithoutMessageWhenHandlingItThenShouldNotDelegateToCommandProcessor() {
-        CommandProcessor processor = mock(CommandProcessor.class);
-        MetallumBot bot = new MetallumBot(processor);
-
-        Update update = mock(Update.class);
-        when(update.hasMessage()).thenReturn(false);
+    void shouldDispatchBandCommand() {
+        Update update = updateWithCommand("/band");
 
         bot.consume(update);
 
-        verifyNoInteractions(processor);
+        assertTrue(band.called);
+        assertEquals("42", band.receivedChatId);
+
+        assertFalse(upcoming.called);
+        assertFalse(unknown.called);
     }
 
     @Test
-    @DisplayName("Verifies that the bot does not delegate if the update is a message without text")
-    void givenBotReceivesUpdateWithoutMessageTextWhenHandlingItThenShouldNotDelegateToCommandProcessor() {
-        CommandProcessor processor = mock(CommandProcessor.class);
-        MetallumBot bot = new MetallumBot(processor);
-
-        Update update = mock(Update.class);
-        Message message = mock(Message.class);
-
-        when(update.hasMessage()).thenReturn(true);
-        when(update.getMessage()).thenReturn(message);
-        when(message.hasText()).thenReturn(false);
+    void shouldDispatchUpcommingCommand() {
+        Update update = updateWithCommand("/upcoming");
 
         bot.consume(update);
 
-        verifyNoInteractions(processor);
+        assertTrue(upcoming.called);
+        assertEquals("42", upcoming.receivedChatId);
+
+        assertFalse(band.called);
+        assertFalse(unknown.called);
+    }
+
+
+    @Test
+    void shouldHandleUnknownCommand() {
+        Update update = updateWithCommand("/foo");
+
+        bot.consume(update);
+
+        assertTrue(unknown.called);
+        assertEquals("42", unknown.receivedChatId);
+
+        assertFalse(band.called);
+        assertFalse(upcoming.called);
+    }
+
+    @Test
+    void shouldIgnoreUpdateWithoutMessage() {
+        Update update = new Update();
+
+        bot.consume(update);
+
+        assertFalse(band.called);
+        assertFalse(upcoming.called);
+        assertFalse(unknown.called);
+    }
+
+    @Test
+    void shouldIgnoreUpdateWithMessageWithoutText() {
+        Chat chat = Chat.builder().id(42L).type("private").build();
+        Message message = Message.builder().chat(chat).text(null).build();
+        Update update = new Update();
+        update.setMessage(message);
+
+        bot.consume(update);
+
+        
+        assertFalse(band.called);
+        assertFalse(upcoming.called);
+        assertFalse(unknown.called);
     }
 }

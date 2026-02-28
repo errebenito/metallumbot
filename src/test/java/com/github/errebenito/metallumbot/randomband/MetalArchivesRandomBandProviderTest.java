@@ -2,6 +2,7 @@ package com.github.errebenito.metallumbot.randomband;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
 import java.net.http.HttpClient;
 
 import org.junit.jupiter.api.AfterEach;
@@ -17,19 +18,19 @@ class MetalArchivesRandomBandProviderTest {
     private MockWebServer server;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() throws IOException {
         server = new MockWebServer();
         server.start();
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() throws IOException {
         server.shutdown();
     }
 
     @Test
     @DisplayName("Verifies that the band link is retrieved from the location header")
-    void givenRandomBandRequestWhenResponseHasStatus302AndLocationHeaderThenShouldReturnBandLink() throws Exception {
+    void givenRandomBandRequestWhenResponseHasStatus302AndLocationHeaderThenShouldReturnBandLink() throws IOException, InterruptedException {
         server.enqueue(new MockResponse()
                 .setResponseCode(302)
                 .addHeader("Location",

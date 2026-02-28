@@ -1,5 +1,6 @@
 package com.github.errebenito.metallumbot.randomband;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -25,7 +26,7 @@ public class MetalArchivesRandomBandProvider implements RandomBandProvider {
     }
 
     @Override
-    public String getRandomBandUrl() throws Exception {
+    public String getRandomBandUrl() throws IllegalStateException, IOException, InterruptedException {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(this.randomBandUrl))

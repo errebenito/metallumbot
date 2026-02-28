@@ -2,6 +2,8 @@ package com.github.errebenito.metallumbot.upcomingalbum;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,19 +17,19 @@ class UpcomingAlbumsFetcherTest {
     private MockWebServer server;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() throws IOException {
         server = new MockWebServer();
         server.start();
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() throws IOException {
         server.shutdown();
     }
 
     @Test
     @DisplayName("Verifies that fetching the upcoming album data works")
-    void givenAlbumFetcherWhenFetchingDataThenShouldReturnExpectedValue() throws Exception {
+    void givenAlbumFetcherWhenFetchingDataThenShouldReturnExpectedValue() throws IOException, InterruptedException {
         String json = """
         {
         "aaData": [
@@ -48,9 +50,9 @@ class UpcomingAlbumsFetcherTest {
 
         String url = server.url("/test").toString();
 
-        UpcomingAlbumsFetcher fetcher = new UpcomingAlbumsFetcher();
+        MetalArchivesUpcomingAlbumsDataFetcher fetcher = new MetalArchivesUpcomingAlbumsDataFetcher(url);
 
-        String doc = fetcher.fetch(url);
+        String doc = fetcher.fetch();
 
         assertTrue(doc.contains("Test Band"));
     }

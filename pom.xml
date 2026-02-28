@@ -31,13 +31,6 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			<dependency>
-				<groupId>org.mockito</groupId>
-    			<artifactId>mockito-bom</artifactId>
-    			<version>5.21.0</version>
-    			<type>pom</type>
-    			<scope>import</scope>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
@@ -84,16 +77,6 @@
   			<version>4.12.0</version>
   			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -113,14 +96,15 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.5.4</version>
 				<configuration>
-					<argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
 					<includes>
-						<include>com.github.errebenito.metallumbot.bot.CommandProcessorTest</include>
 						<include>com.github.errebenito.metallumbot.bot.MetallumBotTest</include>
+						<include>com.github.errebenito.metallumbot.messaging.TelegramMessageSenderTest</include>
 						<include>com.github.errebenito.metallumbot.randomband.MetalArchivesRandomBandProviderTest</include>
-						<include>com.github.errebenito.metallumbot.randomband.RandomBandUseCaseTest</include>
+						<include>com.github.errebenito.metallumbot.randomband.MetalArchivesRandomBandUseCaseTest</include>
+						<include>com.github.errebenito.metallumbot.unknowncommand.MetallumBotUnknownCommandUseCaseTest</include>
+						<include>com.github.errebenito.metallumbot.upcomingalbum.AlbumTest</include>
 						<include>com.github.errebenito.metallumbot.upcomingalbum.MetalArchivesUpcomingAlbumProviderTest</include>
-						<include>com.github.errebenito.metallumbot.upcomingalbum.RandomUpcomingAlbumUseCaseTest</include>
+						<include>com.github.errebenito.metallumbot.upcomingalbum.MetalArchivesRandomUpcomingAlbumUseCaseTest</include>
 						<include>com.github.errebenito.metallumbot.upcomingalbum.UpcomingAlbumsFetcherTest</include>
 					</includes>
 				</configuration>
@@ -204,7 +188,7 @@
 						<executions>
 							<execution>
 								<id>pit-report</id>
-								<phase>test-compile</phase>
+								<phase>verify</phase>
 								<goals>
 									<goal>mutationCoverage</goal>
 								</goals>
@@ -222,27 +206,10 @@
         						<param>com.github.errebenito.metallumbot.Main</param>
     						</excludedClasses>
 							<targetClasses>
-								<param>com.github.errebenito.metallumbot.CommandHandler</param>
-								<param>com.github.errebenito.metallumbot.bot.CommandProcessor</param>
-								<param>com.github.errebenito.metallumbot.bot.MetallumBot</param>
-								<param>com.github.errebenito.metallumbot.bot.MetallumBotMessageSender</param>
-								<param>com.github.errebenito.metallumbot.helper.UpcomnigAlbumHelper</param>
-								<param>com.github.errebenito.metallumbot.model.Album</param>
-								<param>com.github.errebenito.metallumbot.model.Command</param>
-								<param>com.github.errebenito.metallumbot.randomband.MetalArchivesRandomBandProvider</param>
-								<param>com.github.errebenito.metallumbot.randomband.RandomBandUseCase</param>
-								<param>com.github.errebenito.metallumbot.upcomingalbum.MetalArchivesUpcomingAlbumProvider</param>
-								<param>com.github.errebenito.metallumbot.upcomingalbum.RandomUpcomingAlbumUseCase</param>
-								<param>com.github.errebenito.metallumbot.upcomingalbum.UpcomingAlbumsFetcher</param>
+								<param>com.github.errebenito.metallumbot.*</param>
 							</targetClasses>
 							<targetTests>
-								<param>com.github.errebenito.metallumbot.bot.CommandProcessorTest</param>
-								<param>com.github.errebenito.metallumbot.bot.MetallumBotTest</param>
-								<param>com.github.errebenito.metallumbot.randomband.MetalArchivesRandomBandProviderTest</param>
-								<param>com.github.errebenito.metallumbot.randomband.RandomBandUseCaseTest</param>
-								<param>com.github.errebenito.metallumbot.upcomingalbum.MetalArchivesUpcomingAlbumProviderTest</param>
-								<param>com.github.errebenito.metallumbot.upcomingalbum.RandomUpcomingAlbumUseCaseTest</param>
-								<param>com.github.errebenito.metallumbot.upcomingalbum.UpcomingAlbumsFetcherTest</param>
+							    <param>com.github.errebenito.metallumbot.*Test</param>
 							</targetTests>
 							<outputFormats>
 								<outputFormat>xml</outputFormat>

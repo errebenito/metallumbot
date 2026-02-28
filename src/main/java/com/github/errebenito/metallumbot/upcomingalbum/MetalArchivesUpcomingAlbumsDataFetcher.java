@@ -1,14 +1,22 @@
 package com.github.errebenito.metallumbot.upcomingalbum;
 
+import java.io.IOException;
 import java.net.CookieManager;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-public class UpcomingAlbumsFetcher implements MetalArchivesDataFetcher {
+public class MetalArchivesUpcomingAlbumsDataFetcher implements UpcomingAlbumDataFetcher {
+    
+    private final String url;
+
+    public MetalArchivesUpcomingAlbumsDataFetcher(String url) {
+        this.url = url;
+    }
+
     @Override
-    public String fetch(String url) throws Exception {
+    public String fetch() throws IOException, InterruptedException {
 
         HttpClient client = HttpClient.newBuilder()
         .followRedirects(HttpClient.Redirect.NORMAL)

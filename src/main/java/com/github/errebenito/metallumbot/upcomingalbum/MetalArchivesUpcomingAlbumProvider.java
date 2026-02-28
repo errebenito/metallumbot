@@ -1,5 +1,6 @@
 package com.github.errebenito.metallumbot.upcomingalbum;
 
+import java.io.IOException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -8,8 +9,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.errebenito.metallumbot.helper.UpcomingAlbumHelper;
-import com.github.errebenito.metallumbot.model.Album;
 
 public class MetalArchivesUpcomingAlbumProvider implements RandomUpcomingAlbumProvider {
     private record CacheEntry(JsonNode data, Instant expiresAt) {
@@ -19,8 +18,9 @@ public class MetalArchivesUpcomingAlbumProvider implements RandomUpcomingAlbumPr
         }
     }
 
-    private final String jsonUrl;
-    MetalArchivesDataFetcher fetcher;
+    private record ParsedAnchor(String href, String text) {}
+
+    private final UpcomingAlbumDataFetcher fetcher;
 
     private final Duration ttl;
     private final Clock clock;
@@ -31,18 +31,16 @@ public class MetalArchivesUpcomingAlbumProvider implements RandomUpcomingAlbumPr
 
     
     public MetalArchivesUpcomingAlbumProvider(
-        String jsonUrl,
-        MetalArchivesDataFetcher fetcher,
+        UpcomingAlbumDataFetcher fetcher,
         Duration ttl,
         Clock clock) {
-        this.jsonUrl = jsonUrl;
         this.fetcher = fetcher;
         this.ttl = ttl;
         this.clock = clock;
     }
 
     @Override
-    public synchronized Album getRandomUpcomingAlbum() throws Exception {
+    public synchronized Album getRandomUpcomingAlbum() throws IOException, InterruptedException {
         if (cache == null || cache.isExpired(clock)) {
             cache = refresh();
         }
@@ -50,8 +48,8 @@ public class MetalArchivesUpcomingAlbumProvider implements RandomUpcomingAlbumPr
         return getRandomUpcomingAlbum(cache.data());
     }
 
-    private CacheEntry refresh() throws Exception {
-        String doc = fetcher.fetch(jsonUrl);
+    private CacheEntry refresh() throws IOException, InterruptedException{
+        String doc = fetcher.fetch();
         JsonNode data = parseJSON(doc);
         Instant expiresAt = Instant.now(clock).plus(ttl);
         return new CacheEntry(data, expiresAt);
@@ -64,12 +62,15 @@ public class MetalArchivesUpcomingAlbumProvider implements RandomUpcomingAlbumPr
         String albumHtml = entry.get(1).asText();
         String type = entry.get(2).asText();
         String genre = entry.get(3).asText();
-        
+
+        ParsedAnchor band = parseAnchor(bandHtml);
+        ParsedAnchor album = parseAnchor(albumHtml);
+
         return new Album(
-            UpcomingAlbumHelper.extractHref(bandHtml),
-            UpcomingAlbumHelper.extractText(bandHtml),
-            UpcomingAlbumHelper.extractHref(albumHtml),
-            UpcomingAlbumHelper.extractText(albumHtml), 
+            band.href(),
+            band.text(),
+            album.href(),
+            album.text(),
             type,
             genre
         );
@@ -82,5 +83,46 @@ public class MetalArchivesUpcomingAlbumProvider implements RandomUpcomingAlbumPr
             throw new IllegalStateException("No upcoming albums found");
         }
         return data;
+    }
+
+    private ParsedAnchor parseAnchor(String anchorHtml) {
+
+        int anchorStart = anchorHtml.indexOf("<a");
+        if (anchorStart == -1) {
+            throw new IllegalArgumentException("Missing <a tag");
+        }
+
+        int tagEnd = anchorHtml.indexOf(">", anchorStart);
+        if (tagEnd == -1) {
+            throw new IllegalArgumentException("Malformed anchor tag");
+        }
+
+        int closeTagStart = anchorHtml.indexOf("</a>", tagEnd);
+        if (closeTagStart == -1) {
+            throw new IllegalArgumentException("Missing closing </a> tag");
+        }
+
+        int hrefStart = anchorHtml.indexOf("href=\"", anchorStart);
+        if (hrefStart == -1) {
+            throw new IllegalArgumentException("No href found");
+        }
+
+        int valueStart = hrefStart + 6;
+        int valueEnd = anchorHtml.indexOf('"', valueStart);
+
+        if (valueEnd == -1) {
+            throw new IllegalArgumentException("Malformed href");
+        }
+
+        String href = anchorHtml.substring(valueStart, valueEnd);
+
+    
+        if (closeTagStart == tagEnd + 1) {
+            throw new IllegalArgumentException("Empty anchor text");
+        }
+
+        String text = anchorHtml.substring(tagEnd + 1, closeTagStart);
+
+        return new ParsedAnchor(href, text);
     }
 }

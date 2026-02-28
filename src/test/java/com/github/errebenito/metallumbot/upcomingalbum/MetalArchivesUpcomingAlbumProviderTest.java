@@ -6,149 +6,220 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import com.github.errebenito.metallumbot.model.Album;
 
 class MetalArchivesUpcomingAlbumProviderTest {
 
-    @Test
-    @DisplayName("Verifies that the upcoming albums JSON data is correctly parsed")
-    void givenUpcomingAlbumsJsonWhenGettingRandomAlbumThenShouldParseJSon() throws Exception {
-        String json = """
+    private static String jsonWithBandAnchor(String bandAnchor) {
+        String escaped = bandAnchor
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"");
+
+        return """
         {
         "aaData": [
             [
-            "<a href=\\"https://band\\">Test Band</a>",
+            "%s",
             "<a href=\\"https://album\\">Test Album</a>",
             "Full-length",
-            "Black Metal",
-            "January 1st, 2026"
+            "Black Metal"
             ]
         ]
         }
-        """;
+        """.formatted(escaped);
+    }
 
-        MetalArchivesDataFetcher fakeFetcher =
-            url -> json;
+    private static String validNormalJson() {
+        return jsonWithBandAnchor("<a href=\"https://band\">Test Band</a>");
+    }
 
-        MetalArchivesUpcomingAlbumProvider provider =
-            new MetalArchivesUpcomingAlbumProvider("ignored", fakeFetcher, 
-            Duration.of(1, ChronoUnit.SECONDS), Clock.systemUTC());
+    private static class CountingFetcher implements UpcomingAlbumDataFetcher {
+        int calls = 0;
+        private final String json;
 
-        Album album = provider.getRandomUpcomingAlbum();
+        CountingFetcher(String json) {
+            this.json = json;
+        }
 
-        assertEquals("Test Band", album.bandName());
-        assertEquals("Test Album", album.albumName());
+        @Override
+        public String fetch() {
+            calls++;
+            return json;
+        }
+    }
+
+    private static Clock fixedClock(String isoInstant) {
+        return Clock.fixed(Instant.parse(isoInstant), ZoneOffset.UTC);
     }
 
     @Test
-    @DisplayName("Verifies that an exception is thrown if the JSON data contains no albums")
-    void givenUpcomingAlbumsJsonWithoutAlbumDataWhenGettingRandomAlbumThenShouldTrow() {
-        String json = """
-        {
-        "aaData": []
-        }
-        """;
-
-        MetalArchivesDataFetcher fakeFetcher = url -> json;
+    void shouldReturnParsedAlbum() throws Exception {
+        CountingFetcher fetcher = new CountingFetcher(validNormalJson());
 
         MetalArchivesUpcomingAlbumProvider provider =
-            new MetalArchivesUpcomingAlbumProvider("ignored", fakeFetcher, 
-            Duration.of(1, ChronoUnit.SECONDS), Clock.systemUTC());
+            new MetalArchivesUpcomingAlbumProvider(
+                fetcher,
+                Duration.ofHours(1),
+                fixedClock("2024-01-01T00:00:00Z")
+            );
 
-        IllegalStateException ex = assertThrows(
-            IllegalStateException.class,
-            provider::getRandomUpcomingAlbum
-        );
+        Album album = provider.getRandomUpcomingAlbum();
+
+        assertEquals("https://band", album.bandUrl());
+        assertEquals("Test Band", album.bandName());
+        assertEquals("https://album", album.albumUrl());
+        assertEquals("Test Album", album.albumName());
+        assertEquals("Full-length", album.type());
+        assertEquals("Black Metal", album.genre());
+        assertEquals(1, fetcher.calls);
+    }
+
+    @Test
+    void shouldThrowWhenNoAaData() {
+        UpcomingAlbumDataFetcher fetcher = () -> "{}";
+
+        MetalArchivesUpcomingAlbumProvider provider =
+            new MetalArchivesUpcomingAlbumProvider(
+                fetcher,
+                Duration.ofHours(1),
+                Clock.systemUTC()
+            );
+
+        IllegalStateException ex =
+            assertThrows(IllegalStateException.class, provider::getRandomUpcomingAlbum);
 
         assertEquals("No upcoming albums found", ex.getMessage());
     }
 
     @Test
-    @DisplayName("Verifies that the cache is used for calls made before it must be refreshed")
-    void givenMultipleUpcomingAlbumRequestsWhenGettingAlbumThenShouldUseCache() throws Exception {
-        String json = """
-        {
-        "aaData": [
-            [
-            "<a href=\\"https://band\\">Test Band</a>",
-            "<a href=\\"https://album\\">Test Album</a>",
-            "Full-length",
-            "Black Metal"
-            ]
-        ]
-        }
+    void shouldThrowWhenAaDataEmpty() {
+        UpcomingAlbumDataFetcher fetcher = () -> """
+        { "aaData": [] }
         """;
-
-        AtomicInteger calls = new AtomicInteger();
-
-        MetalArchivesDataFetcher fakeFetcher = url -> {
-            calls.incrementAndGet();
-            return json;
-        };
-
-        Instant baseTime = Instant.parse("2026-01-01T00:00:00Z");
-        Clock clock = Clock.fixed(baseTime, ZoneOffset.UTC);
 
         MetalArchivesUpcomingAlbumProvider provider =
             new MetalArchivesUpcomingAlbumProvider(
-                "ignored",
-                fakeFetcher,
+                fetcher,
                 Duration.ofHours(1),
-                clock
+                Clock.systemUTC()
             );
 
-        provider.getRandomUpcomingAlbum();
-        provider.getRandomUpcomingAlbum();
-
-        assertEquals(1, calls.get());
+        assertThrows(IllegalStateException.class, provider::getRandomUpcomingAlbum);
     }
 
     @Test
-    @DisplayName("Verifies that the cache is refreshed for calls made after it expires")
-    void givenMultipleUpcomingAlbumRequestsWhenGettingAlbumFromExpiredCacheThenShouldRefreshCache() throws Exception {
-        String json = """
-        {
-        "aaData": [
-            [
-            "<a href=\\"https://band\\">Test Band</a>",
-            "<a href=\\"https://album\\">Test Album</a>",
-            "Full-length",
-            "Black Metal"
-            ]
-        ]
-        }
+    void shouldThrowWhenAaDataIsNotArray() {
+        UpcomingAlbumDataFetcher fetcher = () -> """
+            { "aaData": {} }
         """;
-
-        AtomicInteger calls = new AtomicInteger();
-
-        MetalArchivesDataFetcher fakeFetcher = url -> {
-            calls.incrementAndGet();
-            return json;
-        };
-
-        Instant baseTime = Instant.parse("2026-01-01T00:00:00Z");
-        MutableClock clock = new MutableClock(baseTime, ZoneOffset.UTC);
 
         MetalArchivesUpcomingAlbumProvider provider =
             new MetalArchivesUpcomingAlbumProvider(
-                "ignored",
-                fakeFetcher,
+                fetcher,
                 Duration.ofHours(1),
+                Clock.systemUTC()
+            );
+
+        assertThrows(IllegalStateException.class, provider::getRandomUpcomingAlbum);
+    }
+
+    @Test
+    void shouldThrowWhenMissingATag() {
+        String json = jsonWithBandAnchor("<span href=\"x\">Text</span>");
+
+        assertAnchorFailure(json, "Missing <a tag");
+    }
+
+    @Test
+    void shouldThrowWhenMalformedOpeningTag() {
+        String json = jsonWithBandAnchor("<a href=\"x\" Text");
+
+        assertAnchorFailure(json, "Malformed anchor tag");
+    }
+
+    @Test
+    void shouldThrowWhenMissingClosingTag() {
+        String json = jsonWithBandAnchor("<a href=\"x\">Text");
+
+        assertAnchorFailure(json, "Missing closing </a> tag");
+    }
+
+    @Test
+    void shouldThrowWhenNoHrefFound() {
+        String json = jsonWithBandAnchor("<a>Text</a>");
+
+        assertAnchorFailure(json, "No href found");
+    }
+
+    @Test
+    void shouldThrowWhenMalformedHref() {
+        String json = jsonWithBandAnchor("<a href=\"x>Text</a>");
+
+        assertAnchorFailure(json, "Malformed href");
+    }
+
+    @Test
+    void shouldThrowWhenEmptyText() {
+        String json = jsonWithBandAnchor("<a href=\"x\"></a>");
+
+        assertAnchorFailure(json, "Empty anchor text");
+    }
+
+    private void assertAnchorFailure(String json, String expectedMessage) {
+        UpcomingAlbumDataFetcher fetcher = () -> json;
+
+        MetalArchivesUpcomingAlbumProvider provider =
+            new MetalArchivesUpcomingAlbumProvider(
+                fetcher,
+                Duration.ofHours(1),
+                Clock.systemUTC()
+            );
+
+        IllegalArgumentException ex =
+            assertThrows(IllegalArgumentException.class, provider::getRandomUpcomingAlbum);
+
+        assertEquals(expectedMessage, ex.getMessage());
+    }
+
+    @Test
+    void shouldUseCacheWhenNotExpired() throws Exception {
+        CountingFetcher fetcher = new CountingFetcher(validNormalJson());
+
+        MetalArchivesUpcomingAlbumProvider provider =
+            new MetalArchivesUpcomingAlbumProvider(
+                fetcher,
+                Duration.ofHours(1),
+                fixedClock("2024-01-01T00:00:00Z")
+            );
+
+        provider.getRandomUpcomingAlbum();
+        provider.getRandomUpcomingAlbum();
+
+        assertEquals(1, fetcher.calls);
+    }
+
+    @Test
+    void shouldRefreshWhenExpired() throws Exception {
+        CountingFetcher fetcher = new CountingFetcher(validNormalJson());
+
+        MutableClock clock = new MutableClock(
+                Instant.parse("2024-01-01T00:00:00Z"),
+                ZoneOffset.UTC
+        );
+
+        MetalArchivesUpcomingAlbumProvider provider =
+            new MetalArchivesUpcomingAlbumProvider(
+                fetcher,
+                Duration.ofSeconds(10),
                 clock
             );
 
         provider.getRandomUpcomingAlbum();
-        assertEquals(1, calls.get());
+        assertEquals(1, fetcher.calls);
 
-        clock.advance(Duration.ofHours(2));
+        clock.advance(Duration.ofSeconds(11));
 
         provider.getRandomUpcomingAlbum();
-        assertEquals(2, calls.get());
+        assertEquals(2, fetcher.calls);
     }
 }

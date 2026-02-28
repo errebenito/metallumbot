@@ -6,33 +6,34 @@ import java.time.temporal.ChronoUnit;
 
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 
-import com.github.errebenito.metallumbot.bot.CommandProcessor;
 import com.github.errebenito.metallumbot.bot.MetallumBot;
-import com.github.errebenito.metallumbot.bot.MetallumBotMessageSender;
-import com.github.errebenito.metallumbot.helper.UpcomingAlbumHelper;
+import com.github.errebenito.metallumbot.messaging.TelegramMessageSender;
 import com.github.errebenito.metallumbot.randomband.MetalArchivesRandomBandProvider;
-import com.github.errebenito.metallumbot.randomband.RandomBandUseCase;
+import com.github.errebenito.metallumbot.randomband.MetalArchivesRandomBandUseCase;
+import com.github.errebenito.metallumbot.unknowncommand.MetallumBotUnknownCommandUseCase;
 import com.github.errebenito.metallumbot.upcomingalbum.MetalArchivesUpcomingAlbumProvider;
-import com.github.errebenito.metallumbot.upcomingalbum.UpcomingAlbumsFetcher;
-import com.github.errebenito.metallumbot.upcomingalbum.RandomUpcomingAlbumUseCase;
+import com.github.errebenito.metallumbot.upcomingalbum.MetalArchivesUpcomingAlbumsDataFetcher;
+import com.github.errebenito.metallumbot.upcomingalbum.MetalArchivesRandomUpcomingAlbumUseCase;
 
 public class Main {
 
     public static void main(String[] args) throws Exception {
 
+        final String FULL_UPCOMING_ALBUMS_URL = "https://www.metal-archives.com/release/ajax-upcoming/json/1";
+
         String botToken = System.getenv("METALLUM_BOT_TOKEN");
 
         var bandProvider = new MetalArchivesRandomBandProvider();
         var albumProvider = new MetalArchivesUpcomingAlbumProvider(
-            UpcomingAlbumHelper.FULL_UPCOMING_ALBUMS_URL,
-            new UpcomingAlbumsFetcher(),
+            new MetalArchivesUpcomingAlbumsDataFetcher(FULL_UPCOMING_ALBUMS_URL),
             Duration.of(12, ChronoUnit.HOURS),
         Clock.systemUTC());
-        var bandHandler = new RandomBandUseCase(bandProvider);
-        var albumHandler = new RandomUpcomingAlbumUseCase(albumProvider);
-        var sender = new MetallumBotMessageSender(botToken);
-        var commandProcessor = new CommandProcessor(bandHandler, albumHandler, sender);
-        var bot = new MetallumBot(commandProcessor);
+        var sender = new TelegramMessageSender(botToken);
+
+        var unknownCommandUseCase = new MetallumBotUnknownCommandUseCase(sender);
+        var bandUseCase = new MetalArchivesRandomBandUseCase(bandProvider, sender);
+        var albumUseCase = new MetalArchivesRandomUpcomingAlbumUseCase(albumProvider, sender);
+        var bot = new MetallumBot(unknownCommandUseCase, bandUseCase, albumUseCase);
 
         try (TelegramBotsLongPollingApplication app = new TelegramBotsLongPollingApplication()) {
             app.registerBot(botToken, bot);
