@@ -41,12 +41,15 @@ jobs:
             sonarcloud.io:443
             www.metal-archives.com:443
           allow-subprocesses: true 
+          allow-node-subprocesses: true 
           allow-paths: |
             /opt/hostedtoolcache
             /home/runner/work/_temp
             /home/runner/work
             /tmp
             /home/runner/.cache
+            /var/tmp
+            /home/runner/_tool
 
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
