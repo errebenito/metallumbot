@@ -1,8 +1,10 @@
 package com.github.errebenito.metallumbot;
 
+import java.net.InetSocketAddress;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import com.sun.net.httpserver.HttpServer;
 
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 
@@ -35,9 +37,27 @@ public class Main {
         var albumUseCase = new MetalArchivesRandomUpcomingAlbumUseCase(albumProvider, sender);
         var bot = new MetallumBot(unknownCommandUseCase, bandUseCase, albumUseCase);
 
+        startHttpServer();
+
         try (TelegramBotsLongPollingApplication app = new TelegramBotsLongPollingApplication()) {
             app.registerBot(botToken, bot);
             Thread.currentThread().join();
         }
+    }
+
+    private static void startHttpServer() throws Exception {
+        int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "10000"));
+
+        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+
+        server.createContext("/", exchange -> {
+            String response = "OK";
+            exchange.sendResponseHeaders(200, response.length());
+            exchange.getResponseBody().write(response.getBytes());
+            exchange.close();
+        });
+
+        server.setExecutor(null);
+        server.start();
     }
 }
