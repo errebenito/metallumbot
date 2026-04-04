@@ -1,5 +1,6 @@
 package com.github.errebenito.metallumbot;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Clock;
 import java.time.Duration;
@@ -45,7 +46,7 @@ public class Main {
         }
     }
 
-    private static void startHttpServer() throws Exception {
+    private static void startHttpServer() throws IOException {
         int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "10000"));
 
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
