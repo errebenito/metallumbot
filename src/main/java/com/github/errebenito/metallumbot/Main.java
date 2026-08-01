@@ -36,11 +36,11 @@ public class Main {
         var unknownCommandUseCase = new MetallumBotUnknownCommandUseCase(sender);
         var bandUseCase = new MetalArchivesRandomBandUseCase(bandProvider, sender);
         var albumUseCase = new MetalArchivesRandomUpcomingAlbumUseCase(albumProvider, sender);
-        var bot = new MetallumBot(unknownCommandUseCase, bandUseCase, albumUseCase);
 
         startHttpServer();
 
-        try (TelegramBotsLongPollingApplication app = new TelegramBotsLongPollingApplication()) {
+        try (var bot = new MetallumBot(unknownCommandUseCase, bandUseCase, albumUseCase);
+             var app = new TelegramBotsLongPollingApplication()) {
             app.registerBot(botToken, bot);
             Thread.currentThread().join();
         }
